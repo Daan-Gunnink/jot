@@ -180,6 +180,7 @@ onBeforeUnmount(() => {
     li {
         display: flex;
         align-items: flex-start;
+        
 
         >label {
             flex: none;
@@ -187,8 +188,8 @@ onBeforeUnmount(() => {
             user-select: none;
 
             input {
-                height: 20px;
-                width: 20px;
+                height: 1.5rem;
+                width: 1.5rem;
                 margin-top: 4px;
             }
         }
@@ -196,6 +197,7 @@ onBeforeUnmount(() => {
 
 
         >div {
+            align-self: center;
             flex: 1 1 auto;
         }
     }
