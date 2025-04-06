@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useJotStore } from '../store/jotStore'
-
+import Logo from '../assets/Logo.vue'
 const jotStore = useJotStore()
 
 const jots = computed(() => jotStore.listJots())
@@ -11,7 +11,7 @@ const jots = computed(() => jotStore.listJots())
 <template>
     <div class="w-80 border-r-2 border-r-base-300 flex flex-col h-full">
         <div class="p-2 border-b-2 border-b-base-300 flex flex-row items-center">
-            <img src="/appicon.png" class="w-10 h-10" />
+            <Logo class="w-10 h-10 fill-neutral " />
             <div class="text-2xl text-neutral font-extrabold">Jot</div>
         </div>
         <div class="flex flex-col flex-1 overflow-auto">
