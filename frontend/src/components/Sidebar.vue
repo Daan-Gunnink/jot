@@ -10,9 +10,9 @@ const jots = computed(() => jotStore.listJots())
 
 <template>
     <div class="w-80 border-r-2 border-r-base-300 flex flex-col h-full">
-        <div class="p-4 border-b-2 border-b-base-300 flex flex-row">
-            <div class="text-4xl text-neutral font-extrabold">JOT</div>
-            <div class="text-4xl text-neutral-content">thing</div>
+        <div class="p-2 border-b-2 border-b-base-300 flex flex-row items-center">
+            <img src="/appicon.png" class="w-10 h-10" />
+            <div class="text-2xl text-neutral font-extrabold">Jot</div>
         </div>
         <div class="flex flex-col flex-1 overflow-auto">
             <RouterLink v-for="jot in jots" :key="jot.id" :to="`/jot/${jot.id}`" class="p-4 w-full hover:bg-base-300"
