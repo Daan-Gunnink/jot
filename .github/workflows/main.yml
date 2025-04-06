@@ -1,0 +1,121 @@
+name: Build and Release Wails App
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers only on version tags like v1.0.0
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install Wails
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: Build macOS app
+        run: wails build -platform darwin/universal
+
+      - name: Create .dmg installer
+        run: |
+          brew install create-dmg
+          create-dmg 'build/bin/*.app' \
+            --overwrite \
+            --dmg-title="MyApp macOS" \
+            --app-drop-link 600 185 \
+            dist/MyApp-macOS.dmg
+
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v3
+        with:
+          name: MyApp-macOS
+          path: dist/MyApp-macOS.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Add Go bin to path
+        run: echo "$env:USERPROFILE\\go\\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: Build Windows app
+        run: wails build -platform windows/amd64
+
+      - name: Zip the Windows executable
+        run: Compress-Archive -Path build/bin/*.exe -DestinationPath dist/MyApp-Windows.zip
+
+      - name: Upload Windows ZIP
+        uses: actions/upload-artifact@v3
+        with:
+          name: MyApp-Windows
+          path: dist/MyApp-Windows.zip
+
+  release:
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: MyApp-macOS
+          path: ./release-assets
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: MyApp-Windows
+          path: ./release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          files: ./release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
