@@ -48,7 +48,7 @@ jobs:
             dist/MyApp-macOS.dmg
 
       - name: Upload macOS DMG
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MyApp-macOS
           path: dist/MyApp-macOS.dmg
@@ -90,7 +90,7 @@ jobs:
         run: Compress-Archive -Path build/bin/*.exe -DestinationPath dist/MyApp-Windows.zip
 
       - name: Upload Windows ZIP
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MyApp-Windows
           path: dist/MyApp-Windows.zip
@@ -100,13 +100,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download macOS artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: MyApp-macOS
           path: ./release-assets
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: MyApp-Windows
           path: ./release-assets
