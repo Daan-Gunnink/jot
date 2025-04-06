@@ -15,18 +15,21 @@ import Paragraph from '@tiptap/extension-paragraph'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import Text from '@tiptap/extension-text'
+import ListItem from '@tiptap/extension-list-item'
+import OrderedList from '@tiptap/extension-ordered-list'
+import BulletList from '@tiptap/extension-bullet-list'
 import Placeholder from '@tiptap/extension-placeholder'
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useJotStore } from '../store/jotStore'
-import { useRoute } from 'vue-router'
 import type { JSONContent } from '@tiptap/vue-3'
+import type { Jot } from '../store/jotStore'
 
 const editor = ref<Editor>()
 const jotStore = useJotStore()
 
-const route = useRoute()
-const jotId = computed(() => route.params.id as string)
-const jot = computed(() => jotStore.getJotById(jotId.value))
+const props = defineProps<{
+    jot: Jot
+}>()
 
 let debounceTimeout: number | null = null
 
@@ -43,45 +46,21 @@ const debounce = (func: (...args: unknown[]) => void, delay: number) => {
     }, delay)
 }
 
-// Watch for changes in the jotId and update editor content
-watch(jotId, (newId, oldId) => {
-    if (newId !== oldId && editor.value) {
-        const currentJot = jotStore.getJotById(newId)
-        if (currentJot?.content) {
-            editor.value.commands.setContent(currentJot.content)
-        }
-    }
-}, { immediate: false })
-
-// Add a new watch to track revision changes
-watch(() => jot.value?.revisionId, (newRevisionId, oldRevisionId) => {
-    if (newRevisionId !== oldRevisionId && editor.value && jot.value) {
-        // Save the current cursor position
-        const { from, to } = editor.value.state.selection
-        
-        // Fetch the updated content based on the new revision ID
-        const currentContent = jot.value.content
-        if (currentContent) {
-            editor.value.commands.setContent(currentContent)
-            
-            // Restore cursor position after the content is updated
-            setTimeout(() => {
-                editor.value?.commands.setTextSelection({ from, to })
-            }, 0)
-        }
-    }
-}, { immediate: false })
-
 const storeEditorContentWithDebounce = (title?: string, content?: JSONContent) => {
     debounce(() => {
-        console.log("debounced and saving")
-        jotStore.updateJot(jotId.value, title, content)
+        jotStore.updateJot(props.jot.id, title, content)
     }, 1000)
 }
 
+watch(() => props.jot.id, (newJotId, oldJotId) => {
+    if(newJotId !== oldJotId) {
+        editor.value?.commands.setContent(props.jot.content)
+    }
+})
+
 onMounted(() => {
     editor.value = new Editor({
-        content: jot.value?.content,
+        content: props.jot.content,
         editorProps: {
             attributes: {
                 id: 'jot-editor',
@@ -93,6 +72,9 @@ onMounted(() => {
             Paragraph,
             Text,
             History,
+            ListItem,
+            OrderedList,
+            BulletList,
             Bold,
             Italic,
             Blockquote,
@@ -170,6 +152,24 @@ onBeforeUnmount(() => {
 
 .tiptap :deep(blockquote) {
     border-left: 4px solid #ddd;
+    padding-left: 1em;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap :deep(ol) {
+    list-style: decimal;
+    padding-left: 1em;
+}
+
+.tiptap :deep(ul) {
+    list-style: disc;
     padding-left: 1em;
 }
 

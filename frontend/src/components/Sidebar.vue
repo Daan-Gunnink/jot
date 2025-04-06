@@ -2,9 +2,32 @@
 import { computed } from 'vue'
 import { useJotStore } from '../store/jotStore'
 import Logo from '../assets/Logo.vue'
+import dayjs from 'dayjs'
 const jotStore = useJotStore()
-
 const jots = computed(() => jotStore.listJots())
+
+const formatDate = (date: Date) => {
+    const today = dayjs()
+    const dayJSDate = dayjs(date)
+
+    if(dayJSDate.isSame(today, 'day')) {
+        return dayJSDate.format('HH:mm')
+    }
+
+    if(dayJSDate.isSame(today, 'week')) {
+        return dayJSDate.format('dddd')
+    }
+
+    if(dayJSDate.isSame(today, 'month')) {
+        return dayJSDate.format('DD MMM')
+    }
+
+    if(dayJSDate.isSame(today, 'year')) {
+        return dayJSDate.format('DD MMM')
+    }
+
+    return dayJSDate.format('DD MMM YYYY')
+}
 
 </script>
 
@@ -18,6 +41,7 @@ const jots = computed(() => jotStore.listJots())
             <RouterLink v-for="jot in jots" :key="jot.id" :to="`/jot/${jot.id}`" class="p-4 w-full hover:bg-base-300"
                 activeClass="bg-base-200" exactActiveClass="bg-base-200">
                 <h2 class="text-lg font-bold">{{ jot.title }}</h2>
+                <p class="text-sm text-base-content/70 text-end">{{ formatDate(jot.updatedAt) }}</p>
             </RouterLink>
         </div>
         <div class="p-4 border-t-2 border-t-base-300">

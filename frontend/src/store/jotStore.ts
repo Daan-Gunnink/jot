@@ -5,9 +5,8 @@ import type { StateTree } from 'pinia'
 import type { PersistenceOptions } from 'pinia-plugin-persistedstate'
 import { v4 as uuidv4 } from 'uuid'
 
-interface Jot {
+export interface Jot {
   id: string
-  revisionId: string
   title: string
   content: JSONContent
   createdAt: Date
@@ -23,7 +22,6 @@ interface JotState {
 
 interface SerializedJot {
   id: string
-  revisionId: string
   title: string
   content: string // Content is serialized as a string
   createdAt: string
@@ -46,7 +44,6 @@ export const useJotStore = defineStore(
     ): string => {
       const jot: Jot = {
         id: uuidv4(),
-        revisionId: uuidv4(),
         title: title,
         content: content ?? { type: 'doc', content: [] },
         createdAt: new Date(),
@@ -78,6 +75,10 @@ export const useJotStore = defineStore(
       return jots.value.find((jot) => jot.id === id)
     }
 
+    const getLatestJot = (): Jot | undefined => {
+      return jots.value.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0]
+    }
+
     const listJots = (): Jot[] => {
       return jots.value.sort(
         (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
@@ -90,6 +91,7 @@ export const useJotStore = defineStore(
       updateJot,
       deleteJot,
       getJotById,
+      getLatestJot,
       listJots,
     }
   },
