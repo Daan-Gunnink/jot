@@ -98,14 +98,14 @@ jobs:
       - name: Create dist directory
         run: New-Item -ItemType Directory -Force -Path dist
 
-      - name: Zip the Windows executable
-        run: Compress-Archive -Path build/bin/jot.exe -DestinationPath dist/Jot-Windows.zip
+      - name: Copy Windows executable
+        run: Copy-Item -Path build/bin/jot.exe -Destination dist/Jot-Windows.exe
 
-      - name: Upload Windows ZIP
+      - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
           name: Jot-Windows
-          path: dist/Jot-Windows.zip
+          path: dist/Jot-Windows.exe
 
   release:
     needs: [build-macos, build-windows]
