@@ -7,7 +7,7 @@
         <div v-else class="flex h-full w-full items-center justify-center flex-col">
             <Placeholder class="w-64 h-64" />
             <div class="text-2xl text-center text-neutral mt-4">You don't have any Jots yet</div>
-            <button @click="jotStore.createJot()" class="btn btn-neutral mt-4">Create your first Jot</button>
+            <button @click="createFirstJot()" class="btn btn-neutral mt-4">Create your first Jot</button>
         </div>
     </div>
 </template>
@@ -26,7 +26,12 @@ const jotStore = useJotStore()
 
 const route = useRoute()
 const jotId = ref<string | undefined>(route.params.id as string)
-const jot = ref<Jot | undefined>(jotStore.getJotById(jotId.value))
+const jot = ref<Jot | undefined>(jotId.value ? jotStore.getJotById(jotId.value) : undefined)
+
+function createFirstJot() {
+    const id = jotStore.createJot()
+    router.push(`/jot/${id}`)
+}
 
 onBeforeMount(() => {
     if (!route.params.id) {
