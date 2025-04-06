@@ -38,20 +38,23 @@ jobs:
       - name: Build macOS app
         run: wails build -platform darwin/universal
 
+      - name: Create dist directory
+        run: mkdir -p dist
+
       - name: Create .dmg installer
         run: |
           brew install create-dmg
-          create-dmg 'build/bin/*.app' \
+          create-dmg build/bin/jot.app \
             --overwrite \
-            --dmg-title="MyApp macOS" \
+            --dmg-title="Jot macOS" \
             --app-drop-link 600 185 \
-            dist/MyApp-macOS.dmg
+            dist/Jot-macOS.dmg
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
         with:
-          name: MyApp-macOS
-          path: dist/MyApp-macOS.dmg
+          name: Jot-macOS
+          path: dist/Jot-macOS.dmg
 
   build-windows:
     runs-on: windows-latest
@@ -86,29 +89,35 @@ jobs:
       - name: Build Windows app
         run: wails build -platform windows/amd64
 
+      - name: Create dist directory
+        run: New-Item -ItemType Directory -Force -Path dist
+
       - name: Zip the Windows executable
-        run: Compress-Archive -Path build/bin/*.exe -DestinationPath dist/MyApp-Windows.zip
+        run: Compress-Archive -Path build/bin/jot.exe -DestinationPath dist/Jot-Windows.zip
 
       - name: Upload Windows ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: MyApp-Windows
-          path: dist/MyApp-Windows.zip
+          name: Jot-Windows
+          path: dist/Jot-Windows.zip
 
   release:
     needs: [build-macos, build-windows]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
-          name: MyApp-macOS
+          name: Jot-macOS
           path: ./release-assets
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: MyApp-Windows
+          name: Jot-Windows
           path: ./release-assets
 
       - name: Create GitHub Release
