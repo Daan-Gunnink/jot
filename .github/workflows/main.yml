@@ -44,11 +44,17 @@ jobs:
       - name: Create .dmg installer
         run: |
           brew install create-dmg
-          create-dmg build/bin/jot.app \
-            --overwrite \
-            --dmg-title="Jot macOS" \
+          create-dmg \
+            --volname "Jot Installer" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "jot.app" 200 190 \
+            --hide-extension "jot.app" \
             --app-drop-link 600 185 \
-            dist/Jot-macOS.dmg
+            --no-internet-enable \
+            dist/Jot-macOS.dmg \
+            build/bin/jot.app
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
