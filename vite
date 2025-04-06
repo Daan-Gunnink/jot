@@ -1,0 +1,214 @@
+
+10:11:12 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+
+  VITE v6.2.5  ready in 279 ms
+
+Vite Server URL: http://localhost:5173/
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+Running frontend DevWatcher command: 'npm run dev'
+Building application for development...
+  • Generating bindings: Done.
+  • Compiling application: Done.
+  • Packaging application: Done.
+ WARNING  This darwin build contains the use of private APIs. This will not pass Apple's AppStor
+ WARNING  This darwin build contains the use of private APIs. This will not pass Apple's AppStore approval process. Please use it only as a test build for testing and debug purposes.
+
+Using DevServer URL: http://localhost:34115
+Using Frontend DevServer URL: http://localhost:5173/
+Using reload debounce setting of 100 milliseconds
+Watching (sub)/directory: /Users/daan/Projects/jotthing
+INF | Serving assets from frontend DevServer URL: http://localhost:5173/
+DEB | [DevWebServer] Serving DevServer at http://localhost:34115
+2025-04-06 10:11:15.488 jotthing[63999:17913271] WARNING: Secure coding is automatically enabled
+2025-04-06 10:11:15.488 jotthing[63999:17913271] WARNING: Secure coding is automatically enabled for restorable state! However, not on all supported macOS versions of this application. Opt-in 
+2025-04-06 10:11:15.488 jotthing[63999:17913271] WARNING: Secure coding is automatically enabled for restorable state! However, not on all supported macOS versions of this application. Opt-in to secure coding explicitly by implementing NSApplicationDelegate.applicationSupportsSecureResto
+2025-04-06 10:11:15.488 jotthing[63999:17913271] WARNING: Secure coding is automatically enabled for restorable state! However, not on all supported macOS versions of this application. Opt-in to secure coding explicitly by implementing NSApplicationDelegate.applicationSupportsSecureRestorableState:.
+DEB | [AssetHandler] Handling request '/' (file='.')
+DEB | [AssetHandler] File '.' not found, serving '/' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/'
+DEB | [AssetHandler] Handling request '/src/main.ts' (file='src/main.ts')
+DEB | [AssetHandler] File 'src/main.ts' not found, serving '/src/main.ts' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/main.ts'
+DEB | [AssetHandler] Handling request '/@vite/client' (file='@vite/client')
+DEB | [AssetHandler] File '@vite/client' not found, serving '/@vite/client' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/@vite/client'
+DEB | [AssetHandler] Handling request '/node_modules/vite/dist/client/env.mjs' (file='node_modul
+DEB | [AssetHandler] Handling request '/node_modules/vite/dist/client/env.mjs' (file='node_modules/vite/dist/client/env.mjs')
+DEB | [AssetHandler] File 'node_modules/vite/dist/client/env.mjs' not found, serving '/node_modu
+DEB | [AssetHandler] File 'node_modules/vite/dist/client/env.mjs' not found, serving '/node_modules/vite/dist/client/env.mjs' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/vite/dist/client/env.mj
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/vite/dist/client/env.mjs'
+DEB | [AssetHandler] Handling request '/src/style.css' (file='src/style.css')
+DEB | [AssetHandler] File 'src/style.css' not found, serving '/src/style.css' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/style.css'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/vue.js' (file='node_modules/.vit
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/vue.js' (file='node_modules/.vite/deps/vue.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/vue.js' not found, serving '/node_modules/.vi
+DEB | [AssetHandler] File 'node_modules/.vite/deps/vue.js' not found, serving '/node_modules/.vite/deps/vue.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/vue.js?v=e98
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/vue.js?v=e985c030'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/pinia.js' (file='node_modules/.v
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/pinia.js' (file='node_modules/.vite/deps/pinia.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/pinia.js' not found, serving '/node_modules/.
+DEB | [AssetHandler] File 'node_modules/.vite/deps/pinia.js' not found, serving '/node_modules/.vite/deps/pinia.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/pinia.js?v=3
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/pinia.js?v=3086b902'
+DEB | [AssetHandler] Handling request '/src/App.vue' (file='src/App.vue')
+DEB | [AssetHandler] File 'src/App.vue' not found, serving '/src/App.vue' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/App.vue'
+DEB | [AssetHandler] Handling request '/src/router.ts' (file='src/router.ts')
+DEB | [AssetHandler] File 'src/router.ts' not found, serving '/src/router.ts' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/router.ts'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/pinia-plugin-persistedstate.js' 
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/pinia-plugin-persistedstate.js' (file='node_modules/.vite/deps/pinia-plugin-persistedstate.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/pinia-plugin-persistedstate.js' not found, se
+DEB | [AssetHandler] File 'node_modules/.vite/deps/pinia-plugin-persistedstate.js' not found, serving '/node_modules/.vite/deps/pinia-plugin-persistedstate.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/pinia-plugin
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/pinia-plugin-persistedstate.js?v=c04e9582'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/chunk-U3LI7FBV.js' (file='node_m
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/chunk-U3LI7FBV.js' (file='node_modules/.vite/deps/chunk-U3LI7FBV.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/chunk-U3LI7FBV.js' not found, serving '/node_
+DEB | [AssetHandler] File 'node_modules/.vite/deps/chunk-U3LI7FBV.js' not found, serving '/node_modules/.vite/deps/chunk-U3LI7FBV.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7F
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f2cff03c'
+DEB | [AssetHandler] Handling request '/src/App.vue' (file='src/App.vue')
+DEB | [AssetHandler] File 'src/App.vue' not found, serving '/src/App.vue' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/App.vue?vue&type=style&index=0&s
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/App.vue?vue&type=style&index=0&scoped=7a7a37b1&lang.css'
+DEB | [AssetHandler] Handling request '/@id/__x00__plugin-vue:export-helper' (file='@id/__x00__p
+DEB | [AssetHandler] Handling request '/@id/__x00__plugin-vue:export-helper' (file='@id/__x00__plugin-vue:export-helper')
+DEB | [AssetHandler] File '@id/__x00__plugin-vue:export-helper' not found, serving '/@id/__x00__
+DEB | [AssetHandler] File '@id/__x00__plugin-vue:export-helper' not found, serving '/@id/__x00__plugin-vue:export-helper' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/@id/__x00__plugin-vue:export-helper'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/vue-router.js' (file='node_modul
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/vue-router.js' (file='node_modules/.vite/deps/vue-router.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/vue-router.js' not found, serving '/node_modu
+DEB | [AssetHandler] File 'node_modules/.vite/deps/vue-router.js' not found, serving '/node_modules/.vite/deps/vue-router.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/vue-router.j
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/vue-router.js?v=743cf778'
+DEB | [AssetHandler] Handling request '/src/views/JotView.vue' (file='src/views/JotView.vue')
+DEB | [AssetHandler] File 'src/views/JotView.vue' not found, serving '/src/views/JotView.vue' by
+DEB | [AssetHandler] File 'src/views/JotView.vue' not found, serving '/src/views/JotView.vue' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/views/JotView.vue'
+DEB | [AssetHandler] Handling request '/src/components/Sidebar.vue' (file='src/components/Sideba
+DEB | [AssetHandler] Handling request '/src/components/Sidebar.vue' (file='src/components/Sidebar.vue')
+DEB | [AssetHandler] File 'src/components/Sidebar.vue' not found, serving '/src/components/Sideb
+DEB | [AssetHandler] File 'src/components/Sidebar.vue' not found, serving '/src/components/Sidebar.vue' by AssetHandler
+DEB | [AssetHandler] Handling request '/src/components/TipTap.vue' (file='src/components/TipTap.
+DEB | [AssetHandler] Handling request '/src/components/TipTap.vue' (file='src/components/TipTap.vue')
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/components/Sidebar.vue'
+DEB | [AssetHandler] File 'src/components/TipTap.vue' not found, serving '/src/components/TipTap
+DEB | [AssetHandler] File 'src/components/TipTap.vue' not found, serving '/src/components/TipTap.vue' by AssetHandler
+DEB | [AssetHandler] Handling request '/src/store/jotStore.ts' (file='src/store/jotStore.ts')
+DEB | [AssetHandler] File 'src/store/jotStore.ts' not found, serving '/src/store/jotStore.ts' by
+DEB | [AssetHandler] File 'src/store/jotStore.ts' not found, serving '/src/store/jotStore.ts' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/components/TipTap.vue'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/store/jotStore.ts'
+/*! 🌼 daisyUI 5.0.12 */
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-heading.js' (f
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-heading.js' (file='node_modules/.vite/deps/@tiptap_extension-heading.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-heading.js' not found, serv
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-heading.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-heading.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-heading.js?v=2440a13c'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_vue-3.js' (file='node_mo
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_vue-3.js' (file='node_modules/.vite/deps/@tiptap_vue-3.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_vue-3.js' not found, serving '/node_m
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_vue-3.js' not found, serving '/node_modules/.vite/deps/@tiptap_vue-3.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_vue-
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_vue-3.js?v=bf0040ca'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-bold.js' (file
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-bold.js' (file='node_modules/.vite/deps/@tiptap_extension-bold.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-bold.js' not found, serving
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-bold.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-bold.js' by AssetHandler
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-blockquote.js'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-blockquote.js' (file='node_modules/.vite/deps/@tiptap_extension-blockquote.js')
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-italic.js' (fi
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-italic.js' (file='node_modules/.vite/deps/@tiptap_extension-italic.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-italic.js' not found, servi
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-italic.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-italic.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-italic.js?v=7d1b0996'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-horizontal-rul
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-horizontal-rule.js' (file='node_modules/.vite/deps/@tiptap_extension-horizontal-rule.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-horizontal-rule.js' not fou
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-horizontal-rule.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-horizontal-rule.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-horizontal-rule.js?v=8dc62897'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-document.js' (
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-document.js' (file='node_modules/.vite/deps/@tiptap_extension-document.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-document.js' not found, ser
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-document.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-document.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-document.js?v=c292ac0d'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-task-item.js' 
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-task-item.js' (file='node_modules/.vite/deps/@tiptap_extension-task-item.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-task-item.js' not found, se
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-task-item.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-task-item.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-task-item.js?v=ce6c9632'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-text.js' (file
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-text.js' (file='node_modules/.vite/deps/@tiptap_extension-text.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-text.js' not found, serving
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-text.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-text.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-text.js?v=b9792044'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-paragraph.js' 
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-paragraph.js' (file='node_modules/.vite/deps/@tiptap_extension-paragraph.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-paragraph.js' not found, se
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-paragraph.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-paragraph.js' by AssetHandler
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-blockquote.js' not found, s
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-blockquote.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-blockquote.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-blockquote.js?v=2eea910d'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-paragraph.js?v=6ff7fb25'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-task-list.js' 
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-task-list.js' (file='node_modules/.vite/deps/@tiptap_extension-task-list.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-task-list.js' not found, se
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-task-list.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-task-list.js' by AssetHandler
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-placeholder.js
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/@tiptap_extension-placeholder.js' (file='node_modules/.vite/deps/@tiptap_extension-placeholder.js')
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-task-list.js?v=ab94bb43'
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-placeholder.js' not found, 
+DEB | [AssetHandler] File 'node_modules/.vite/deps/@tiptap_extension-placeholder.js' not found, serving '/node_modules/.vite/deps/@tiptap_extension-placeholder.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-placeholder.js?v=ce085557'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_exte
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/@tiptap_extension-bold.js?v=bb31ac70'
+DEB | [AssetHandler] Handling request '/src/components/TipTap.vue' (file='src/components/TipTap.
+DEB | [AssetHandler] Handling request '/src/components/TipTap.vue' (file='src/components/TipTap.vue')
+DEB | [AssetHandler] File 'src/components/TipTap.vue' not found, serving '/src/components/TipTap
+DEB | [AssetHandler] File 'src/components/TipTap.vue' not found, serving '/src/components/TipTap.vue' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/components/TipTap.vue?vue&type=s
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/components/TipTap.vue?vue&type=style&index=0&scoped=48c859f3&lang.css'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/uuid.js' (file='node_modules/.vi
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/uuid.js' (file='node_modules/.vite/deps/uuid.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/uuid.js' not found, serving '/node_modules/.v
+DEB | [AssetHandler] File 'node_modules/.vite/deps/uuid.js' not found, serving '/node_modules/.vite/deps/uuid.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/uuid.js?v=fc
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/uuid.js?v=fc16e2e9'
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/chunk-4CMPZW2S.js' (file='node_m
+DEB | [AssetHandler] Handling request '/node_modules/.vite/deps/chunk-4CMPZW2S.js' (file='node_modules/.vite/deps/chunk-4CMPZW2S.js')
+DEB | [AssetHandler] File 'node_modules/.vite/deps/chunk-4CMPZW2S.js' not found, serving '/node_
+DEB | [AssetHandler] File 'node_modules/.vite/deps/chunk-4CMPZW2S.js' not found, serving '/node_modules/.vite/deps/chunk-4CMPZW2S.js' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/chunk-4CMPZW
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/node_modules/.vite/deps/chunk-4CMPZW2S.js?v=f2cff03c'
+DEB | [AssetHandler] Handling request '/src/assets/fonts/nunito-v16-latin-regular.woff2' (file='
+DEB | [AssetHandler] Handling request '/src/assets/fonts/nunito-v16-latin-regular.woff2' (file='src/assets/fonts/nunito-v16-latin-regular.woff2')
+DEB | [AssetHandler] File 'src/assets/fonts/nunito-v16-latin-regular.woff2' not found, serving '
+DEB | [AssetHandler] File 'src/assets/fonts/nunito-v16-latin-regular.woff2' not found, serving '/src/assets/fonts/nunito-v16-latin-regular.woff2' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/assets/fonts/nunito-v16-latin-re
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/assets/fonts/nunito-v16-latin-regular.woff2'
+
+
+To develop in the browser and call your bound Go methods from Javascript, navigate to: http://lo
+To develop in the browser and call your bound Go methods from Javascript, navigate to: http://localhost:34115
+10:11:47 AM [vite] (client) hmr update /src/style.css
+DEB | [AssetHandler] Handling request '/src/style.css' (file='src/style.css')
+DEB | [AssetHandler] File 'src/style.css' not found, serving '/src/style.css' by AssetHandler
+DEB | [ExternalAssetHandler] Loading 'http://localhost:5173/src/style.css?t=1743927107846'
+Development mode exited
+ ♥   If Wails is useful to you or your company, please consider sponsoring the project:

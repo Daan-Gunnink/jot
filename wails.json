@@ -9,5 +9,13 @@
   "author": {
     "name": "Daan Gunnink",
     "email": "daan@infowijs.nl"
+  },
+  "info": {
+    "windows": {
+      "iconPath": "build/windows/logo.ico"
+    },
+    "macOS": {
+      "iconPath": "build/darwin/logo.icns"
+    }
   }
 }

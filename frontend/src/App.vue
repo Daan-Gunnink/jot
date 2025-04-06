@@ -1,21 +1,37 @@
-<script lang="ts" setup>
-import HelloWorld from './components/HelloWorld.vue'</script>
+<script setup lang="ts">
+</script>
 
 <template>
-  <img id="logo" alt="Wails logo" src="./assets/images/logo-universal.png"/>
-  <HelloWorld/>
+  <main class="h-screen w-screen flex">
+    <RouterView />
+  </main>
 </template>
 
-<style>
-#logo {
+<style scoped>
+header {
+  line-height: 1.5;
+}
+
+.logo {
   display: block;
-  width: 50%;
-  height: 50%;
-  margin: auto;
-  padding: 10% 0 0;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-origin: content-box;
+  margin: 0 auto 2rem;
+}
+
+@media (min-width: 1024px) {
+  header {
+    display: flex;
+    place-items: center;
+    padding-right: calc(var(--section-gap) / 2);
+  }
+
+  .logo {
+    margin: 0 2rem 0 0;
+  }
+
+  header .wrapper {
+    display: flex;
+    place-items: flex-start;
+    flex-wrap: wrap;
+  }
 }
 </style>
