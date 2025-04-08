@@ -1,0 +1,34 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      - name: Run lint
+        run: npm run lint
+        working-directory: ./frontend
+
+      - name: Run format check
+        run: npm run format -- --check
+        working-directory: ./frontend
+
+      - name: Run type check
+        run: npm run type-check
+        working-directory: ./frontend
