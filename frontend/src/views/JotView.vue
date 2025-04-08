@@ -2,7 +2,7 @@
     <div class="w-80">
         <Sidebar />
     </div>
-    <div class="grow px-4 pt-2">
+    <div class="grow px-4 pt-2 overflow-y-auto">
         <Editor v-if="jot" :jot="jot" />
         <div v-else class="flex h-full w-full items-center justify-center flex-col">
             <Placeholder class="w-64 h-64" />
