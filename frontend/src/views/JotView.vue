@@ -19,14 +19,7 @@
 <script setup lang="ts">
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import { useRouter, useRoute } from "vue-router";
-import {
-  onMounted,
-  onBeforeUnmount,
-  computed,
-  watch,
-  ref,
-  onBeforeMount,
-} from "vue";
+import { onMounted, onBeforeUnmount, watch, ref, onBeforeMount } from "vue";
 import { useJotStore } from "../store/jotStore";
 import Placeholder from "../assets/Placeholder.vue";
 import Editor from "../components/Editor.vue";
