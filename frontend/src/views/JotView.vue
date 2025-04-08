@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import Sidebar from '../components/Sidebar.vue'
+import Sidebar from '../components/sidebar/Sidebar.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { onMounted, onBeforeUnmount, computed, watch, ref, onBeforeMount } from 'vue'
 import { useJotStore } from '../store/jotStore'
@@ -32,6 +32,7 @@ function createFirstJot() {
     const id = jotStore.createJot()
     router.push(`/jot/${id}`)
 }
+
 
 onBeforeMount(() => {
     if (!route.params.id) {
