@@ -88,7 +88,7 @@ onMounted(() => {
       TaskItem,
       TaskList,
       Placeholder.configure({
-        placeholder: "Write something...",
+        placeholder: "Start writing something...",
       }),
     ],
     onUpdate: () => {
@@ -166,11 +166,12 @@ onBeforeUnmount(() => {
   padding-left: 1em;
 }
 
-.tiptap p.is-editor-empty:first-child::before {
-  color: #adb5bd;
+.tiptap :deep(p.is-editor-empty:first-child::before) {
+  color: var(--neutral-content);
+  opacity: 0.4;
   content: attr(data-placeholder);
   float: left;
-  height: 0;
+  height: auto;
   pointer-events: none;
 }
 
