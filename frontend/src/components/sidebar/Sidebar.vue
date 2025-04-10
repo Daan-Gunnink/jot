@@ -1,10 +1,27 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useJotStore } from "../../store/jotStore";
+import { useRouter } from "vue-router";
 import Logo from "../../assets/Logo.vue";
 import JotItem from "./JotItem.vue";
+
 const jotStore = useJotStore();
+const router = useRouter();
 const jots = computed(() => jotStore.listJots());
+
+function handleJotDelete(id: string) {
+  const newJotId = jotStore.deleteJot(id);
+  if (newJotId) {
+    router.push(`/jot/${newJotId}`);
+  } else {
+    router.push("/");
+  }
+}
+
+function createNewJot() {
+  const id = jotStore.createJot();
+  router.push(`/jot/${id}`);
+}
 </script>
 
 <template>
@@ -18,11 +35,11 @@ const jots = computed(() => jotStore.listJots());
         v-for="jot in jots"
         :key="jot.id"
         :jot="jot"
-        @onDelete="jotStore.deleteJot(jot.id)"
+        @onDelete="handleJotDelete(jot.id)"
       />
     </div>
     <div class="p-4 border-t-2 border-t-base-300">
-      <button @click="jotStore.createJot()" class="btn btn-neutral w-full">
+      <button @click="createNewJot" class="btn btn-neutral w-full">
         New Jot
       </button>
     </div>

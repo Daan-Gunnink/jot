@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import { useRouter, useRoute } from "vue-router";
-import { onMounted, onBeforeUnmount, watch, ref, onBeforeMount } from "vue";
+import { onMounted, onBeforeUnmount, watch, ref, computed, onBeforeMount } from "vue";
 import { useJotStore } from "../store/jotStore";
 import Placeholder from "../assets/Placeholder.vue";
 import Editor from "../components/Editor.vue";
@@ -29,43 +29,57 @@ const router = useRouter();
 const jotStore = useJotStore();
 
 const route = useRoute();
-const jotId = ref<string | undefined>(route.params.id as string);
-const jot = ref<Jot | undefined>(
-  jotId.value ? jotStore.getJotById(jotId.value) : undefined,
-);
+const jotId = computed(() => {
+  return route.params.id ? String(route.params.id) : jotStore.currentJotId;
+});
+
+const jot = computed(() => {
+  if (!jotId.value) return undefined;
+  return jotStore.getJotById(jotId.value as string);
+});
 
 function createFirstJot() {
   const id = jotStore.createJot();
   router.push(`/jot/${id}`);
 }
 
-onBeforeMount(() => {
-  if (!route.params.id) {
-    const latestJot = jotStore.getLatestJot();
-    router.push(`/jot/${latestJot?.id}`);
+function loadJotState() {
+  if (jotStore.isEmpty) {
     return;
   }
-});
 
-watch(route, () => {
-  jotId.value = route.params.id as string;
-  jot.value = jotStore.getJotById(jotId.value);
-});
-
-// Watch for changes in the jotId and update editor content
-watch(
-  jotId,
-  (newId, oldId) => {
-    if (newId !== oldId) {
-      if (newId) {
-        jot.value = jotStore.getJotById(newId);
-      } else {
-        jot.value = undefined;
-      }
+  if (!jotId.value || !jot.value) {    
+    // If there's no valid ID or the jot doesn't exist, navigate to the latest jot
+    const latestJot = jotStore.getLatestJot();
+    if (latestJot) {
+      router.push(`/jot/${latestJot.id}`);
     }
-  },
-  { immediate: false },
-);
+    return;
+  }
+
+  jotStore.setCurrentJotId(jotId.value as string);
+}
+
+onBeforeMount(() => {
+  loadJotState();
+});
+
+// Watch for route changes to update the state
+watch(route, () => {
+  loadJotState();
+});
+
+// Watch for changes in the store's jots array to handle deletion
+watch(() => jotStore.jots.length, () => {
+  loadJotState();
+});
+
+// Watch for changes in the currentJotId to update the view
+watch(() => jotStore.currentJotId, (newId) => {
+  if (newId && newId !== jotId.value) {
+    router.push(`/jot/${newId}`);
+  }
+});
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (
@@ -73,19 +87,17 @@ const handleKeyDown = (event: KeyboardEvent) => {
     (event.altKey || event.ctrlKey || event.key === "n") &&
     event.key === "n"
   ) {
-    event.preventDefault(); // Prevent default browser behavior
-    event.stopPropagation();
+    event.preventDefault();
     const id = jotStore.createJot();
     router.push(`/jot/${id}`);
   }
 };
 
 onMounted(() => {
-  window.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 });
 
-// Clean up event listeners when component unmounts
 onBeforeUnmount(() => {
-  window.removeEventListener("keydown", handleKeyDown);
+  document.removeEventListener("keydown", handleKeyDown);
 });
 </script>

@@ -1,6 +1,6 @@
 import type { JSONContent } from "@tiptap/vue-3";
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { StateTree } from "pinia";
 import type { PersistenceOptions } from "pinia-plugin-persistedstate";
 import { v4 as uuidv4 } from "uuid";
@@ -16,6 +16,7 @@ export interface Jot {
 // Type for our store state
 interface JotState {
   jots: Jot[];
+  currentJotId: string | null;
   revisionsMap: Map<string, Jot[]>;
   redoMap: Map<string, Jot[]>;
 }
@@ -28,10 +29,16 @@ interface SerializedJot {
   updatedAt: string;
 }
 
+// Helper function to limit title length (was previously undefined in the code)
+function limitTitleLength(title: string, maxLength = 50): string {
+  return title.length > maxLength ? title.substring(0, maxLength) : title;
+}
+
 export const useJotStore = defineStore(
   "jot",
   () => {
     const jots = ref<Jot[]>([]);
+    const currentJotId = ref<string | null>(null);
 
     const createJot = (
       title: string = "Untitled Jot",
@@ -45,7 +52,7 @@ export const useJotStore = defineStore(
         updatedAt: new Date(),
       };
       jots.value.push(jot);
-
+      currentJotId.value = jot.id;
       return jot.id;
     };
 
@@ -62,8 +69,17 @@ export const useJotStore = defineStore(
       }
     };
 
-    const deleteJot = (id: string): void => {
+    const deleteJot = (id: string): string | null => {
+      const isCurrentJot = currentJotId.value === id;
       jots.value = jots.value.filter((jot) => jot.id !== id);
+      
+      // If we just deleted the current jot, we need to select a new one
+      if (isCurrentJot) {
+        const latestJot = getLatestJot();
+        currentJotId.value = latestJot?.id || null;
+        return currentJotId.value;
+      }
+      return null;
     };
 
     const getJotById = (id: string): Jot | undefined => {
@@ -71,6 +87,8 @@ export const useJotStore = defineStore(
     };
 
     const getLatestJot = (): Jot | undefined => {
+      if (jots.value.length === 0) return undefined;
+      
       return jots.value.sort(
         (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
       )[0];
@@ -82,19 +100,26 @@ export const useJotStore = defineStore(
       );
     };
 
+    const setCurrentJotId = (id: string | null): void => {
+      currentJotId.value = id;
+    };
+
+    const isEmpty = computed(() => jots.value.length === 0);
+
     return {
       jots,
+      currentJotId,
       createJot,
       updateJot,
       deleteJot,
       getJotById,
       getLatestJot,
       listJots,
+      setCurrentJotId,
+      isEmpty,
     };
   },
   {
-    // Using optimized persistence - only storing latest revision of each jot
-    // This reduces storage requirements but limits undo/redo to the current session only
     persist: {
       serializer: {
         serialize: (state: StateTree): string => {
@@ -109,6 +134,7 @@ export const useJotStore = defineStore(
 
           return JSON.stringify({
             jots: serializedJots,
+            currentJotId: state.currentJotId,
           });
         },
         deserialize: (serializedState: string): StateTree => {
@@ -135,29 +161,10 @@ export const useJotStore = defineStore(
           return {
             ...parsedData,
             jots,
+            currentJotId: parsedData.currentJotId || null,
           };
         },
       },
     } as PersistenceOptions<JotState>,
   },
 );
-
-// Helper function to limit title length
-function limitTitleLength(title: string, maxLength: number = 128): string {
-  // If title is already shorter than max length, return it as is
-  if ([...title].length <= maxLength) {
-    return title;
-  }
-
-  // Try to find the last whitespace within maxLength
-  const titleSlice = [...title].slice(0, maxLength).join("");
-  const lastWhitespaceIndex = titleSlice.lastIndexOf(" ");
-
-  // If whitespace found, break at that point
-  if (lastWhitespaceIndex > 0) {
-    return titleSlice.substring(0, lastWhitespaceIndex) + "...";
-  }
-
-  // If no whitespace found, simply truncate and add ellipsis
-  return titleSlice + "...";
-}
