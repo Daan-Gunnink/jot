@@ -4,12 +4,12 @@ import { useJotStore } from "../../store/jotStore";
 import { useRouter } from "vue-router";
 import Logo from "../../assets/Logo.vue";
 import JotItem from "./JotItem.vue";
-import { Environment } from '../../../wailsjs/runtime';
+import { Environment } from "../../../wailsjs/runtime";
 
 const jotStore = useJotStore();
 const router = useRouter();
 const jots = computed(() => jotStore.listJots());
-const system = ref<'darwin' | 'windows' | null>(null);
+const system = ref<"darwin" | "windows" | null>(null);
 
 function handleJotDelete(id: string) {
   const newJotId = jotStore.deleteJot(id);
@@ -28,15 +28,15 @@ function createNewJot() {
 onMounted(async () => {
   try {
     const env = await Environment();
-    if (env.platform === 'darwin') {
-      system.value = 'darwin';
-    } else if (env.platform === 'windows') {
-      system.value = 'windows';
+    if (env.platform === "darwin") {
+      system.value = "darwin";
+    } else if (env.platform === "windows") {
+      system.value = "windows";
     }
   } catch (error) {
-    const ua = navigator.userAgent
-    const macOSRegex= /(macintosh|macintel|macppc|mac68k|macos)/i
-    system.value = macOSRegex.test(ua) ? 'darwin' : null;
+    const ua = navigator.userAgent;
+    const macOSRegex = /(macintosh|macintel|macppc|mac68k|macos)/i;
+    system.value = macOSRegex.test(ua) ? "darwin" : null;
   }
 });
 </script>
@@ -48,12 +48,26 @@ onMounted(async () => {
       <div class="text-2xl text-neutral font-extrabold">Jot</div>
     </div>
     <div class="flex flex-col flex-1 overflow-auto">
-      <JotItem v-for="jot in jots" :key="jot.id" :jot="jot" @onDelete="handleJotDelete(jot.id)" />
+      <JotItem
+        v-for="jot in jots"
+        :key="jot.id"
+        :jot="jot"
+        @onDelete="handleJotDelete(jot.id)"
+      />
     </div>
     <div class="p-4 border-t-2 border-t-base-300">
       <button @click="createNewJot" class="btn btn-neutral w-full">
-        New Jot <span v-if="system === 'darwin'" class="ml-1 text-xs font-bold text-neutral-content/60">⌘ + N</span>
-        <span v-if="system === 'windows'" class="ml-1 text-xs font-bold text-neutral-content/60">Ctrl + N</span>
+        New Jot
+        <span
+          v-if="system === 'darwin'"
+          class="ml-1 text-xs font-bold text-neutral-content/60"
+          >⌘ + N</span
+        >
+        <span
+          v-if="system === 'windows'"
+          class="ml-1 text-xs font-bold text-neutral-content/60"
+          >Ctrl + N</span
+        >
       </button>
     </div>
   </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import UpdaterService from './components/UpdaterService.vue';
+import UpdaterService from "./components/UpdaterService.vue";
 </script>
 
 <template>

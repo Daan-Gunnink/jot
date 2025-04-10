@@ -72,7 +72,7 @@ export const useJotStore = defineStore(
     const deleteJot = (id: string): string | null => {
       const isCurrentJot = currentJotId.value === id;
       jots.value = jots.value.filter((jot) => jot.id !== id);
-      
+
       // If we just deleted the current jot, we need to select a new one
       if (isCurrentJot) {
         const latestJot = getLatestJot();
@@ -88,7 +88,7 @@ export const useJotStore = defineStore(
 
     const getLatestJot = (): Jot | undefined => {
       if (jots.value.length === 0) return undefined;
-      
+
       return jots.value.sort(
         (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
       )[0];

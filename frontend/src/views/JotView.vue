@@ -19,7 +19,14 @@
 <script setup lang="ts">
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import { useRouter, useRoute } from "vue-router";
-import { onMounted, onBeforeUnmount, watch, ref, computed, onBeforeMount } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  ref,
+  computed,
+  onBeforeMount,
+} from "vue";
 import { useJotStore } from "../store/jotStore";
 import Placeholder from "../assets/Placeholder.vue";
 import Editor from "../components/Editor.vue";
@@ -48,7 +55,7 @@ function loadJotState() {
     return;
   }
 
-  if (!jotId.value || !jot.value) {    
+  if (!jotId.value || !jot.value) {
     // If there's no valid ID or the jot doesn't exist, navigate to the latest jot
     const latestJot = jotStore.getLatestJot();
     if (latestJot) {
@@ -70,16 +77,22 @@ watch(route, () => {
 });
 
 // Watch for changes in the store's jots array to handle deletion
-watch(() => jotStore.jots.length, () => {
-  loadJotState();
-});
+watch(
+  () => jotStore.jots.length,
+  () => {
+    loadJotState();
+  },
+);
 
 // Watch for changes in the currentJotId to update the view
-watch(() => jotStore.currentJotId, (newId) => {
-  if (newId && newId !== jotId.value) {
-    router.push(`/jot/${newId}`);
-  }
-});
+watch(
+  () => jotStore.currentJotId,
+  (newId) => {
+    if (newId && newId !== jotId.value) {
+      router.push(`/jot/${newId}`);
+    }
+  },
+);
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (
