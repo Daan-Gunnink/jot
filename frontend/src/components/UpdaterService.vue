@@ -26,7 +26,7 @@ import {
   DownloadAndInstallUpdate,
 } from "../../wailsjs/go/main/App";
 
-const showUpdateBanner = ref(true);
+const showUpdateBanner = ref(false);
 const updateMessage = ref("");
 const latestVersion = ref("");
 const isUpdating = ref(false);

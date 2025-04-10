@@ -140,21 +140,21 @@ jobs:
       - name: Get version from extract-version job
         run: echo "APP_VERSION=${{needs.extract-version.outputs.version}}" >> $env:GITHUB_ENV
 
-      - name: Build Windows app
+      - name: Build Windows app with NSIS installer
         run: |
-          wails build -platform windows/amd64 -ldflags "-X 'main.Version=${{ env.APP_VERSION }}'"
+          wails build -platform windows/amd64 -nsis -ldflags "-X 'main.Version=${{ env.APP_VERSION }}'"
 
       - name: Create dist directory
         run: New-Item -ItemType Directory -Force -Path dist
 
-      - name: Copy Windows executable
-        run: Copy-Item -Path build/bin/jot.exe -Destination dist/Jot-Windows.exe
+      - name: Copy Windows installer
+        run: Copy-Item -Path build/bin/jot-amd64-installer.exe -Destination dist/Jot-Windows-Installer.exe
 
-      - name: Upload Windows executable
+      - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: Jot-Windows
-          path: dist/Jot-Windows.exe
+          name: Jot-Windows-Installer
+          path: dist/Jot-Windows-Installer.exe
 
   release:
     needs: [extract-version, build-macos, build-windows]
@@ -174,7 +174,7 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: Jot-Windows
+          name: Jot-Windows-Installer
           path: ./release-assets
 
       - name: Create GitHub Release
