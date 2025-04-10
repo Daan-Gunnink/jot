@@ -6,6 +6,18 @@ on:
       - 'v*'  # Still trigger on version tags
 
 jobs:
+  extract-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - id: set-version
+        name: Set Version from Tag
+        run: |
+          APP_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "Setting version to $APP_VERSION"
+
   validate:
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +76,9 @@ jobs:
         working-directory: ./frontend
 
       - name: Build macOS app
-        run: wails build -platform darwin/universal
+        run: |
+          export APP_VERSION=${{ env.APP_VERSION }}
+          wails build -platform darwin/universal
 
       - name: Create dist directory
         run: mkdir -p dist
@@ -122,7 +136,9 @@ jobs:
         working-directory: ./frontend
 
       - name: Build Windows app
-        run: wails build -platform windows/amd64
+        run: |
+          $env:APP_VERSION="${{ env.APP_VERSION }}"
+          wails build -platform windows/amd64
 
       - name: Create dist directory
         run: New-Item -ItemType Directory -Force -Path dist

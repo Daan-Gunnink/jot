@@ -1,7 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import UpdaterService from './components/UpdaterService.vue';
+</script>
 
 <template>
   <main class="h-screen w-screen flex">
+    <UpdaterService />
     <RouterView />
   </main>
 </template>
