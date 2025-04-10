@@ -19,7 +19,7 @@ import ListItem from "@tiptap/extension-list-item";
 import OrderedList from "@tiptap/extension-ordered-list";
 import BulletList from "@tiptap/extension-bullet-list";
 import Placeholder from "@tiptap/extension-placeholder";
-import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useJotStore } from "../store/jotStore";
 import type { JSONContent } from "@tiptap/vue-3";
 import type { Jot } from "../store/jotStore";
