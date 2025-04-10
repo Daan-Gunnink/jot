@@ -16,21 +16,22 @@ import (
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// GetAppVersion returns the current version of the application.
-// It first tries to read from APP_VERSION environment variable,
-// and falls back to "0.1.0" if not set.
-func GetAppVersion() string {
-	version := os.Getenv("APP_VERSION")
-	fmt.Println("version", version)
-	if version == "" {
-		version = "0.0.0" // Default fallback version
-	}
-	return version
-}
+// Version is the current version of the application.
+// This will be overridden during build time using ldflags
+var Version = "0.0.0"
 
-// CurrentVersion is the current version of the application.
-// This should be updated with each new release.
-const CurrentVersion = "0.1.0"
+// GetAppVersion returns the current version of the application.
+// It uses the Version variable that's set during compilation
+func GetAppVersion() string {
+	// First check environment variable for development/testing
+	envVersion := os.Getenv("APP_VERSION")
+	if envVersion != "" {
+		return envVersion
+	}
+	
+	// Return the version set at build time
+	return Version
+}
 
 // GitHubInfo contains the information needed to check for updates.
 type GitHubInfo struct {

@@ -46,7 +46,7 @@ jobs:
         working-directory: ./frontend
 
   build-macos:
-    needs: validate
+    needs: [extract-version, validate]
     runs-on: macos-latest
     steps:
       - name: Checkout repo
@@ -75,10 +75,12 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
+      - name: Get version from extract-version job
+        run: echo "APP_VERSION=${{needs.extract-version.outputs.version}}" >> $GITHUB_ENV
+      
       - name: Build macOS app
         run: |
-          export APP_VERSION=${{ env.APP_VERSION }}
-          wails build -platform darwin/universal
+          wails build -platform darwin/universal -ldflags "-X 'main.Version=${{ env.APP_VERSION }}'"
 
       - name: Create dist directory
         run: mkdir -p dist
@@ -105,7 +107,7 @@ jobs:
           path: dist/Jot-macOS.dmg
 
   build-windows:
-    needs: validate
+    needs: [extract-version, validate]
     runs-on: windows-latest
     steps:
       - name: Checkout repo
@@ -135,10 +137,12 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
+      - name: Get version from extract-version job
+        run: echo "APP_VERSION=${{needs.extract-version.outputs.version}}" >> $env:GITHUB_ENV
+
       - name: Build Windows app
         run: |
-          $env:APP_VERSION="${{ env.APP_VERSION }}"
-          wails build -platform windows/amd64
+          wails build -platform windows/amd64 -ldflags "-X 'main.Version=${{ env.APP_VERSION }}'"
 
       - name: Create dist directory
         run: New-Item -ItemType Directory -Force -Path dist
@@ -153,7 +157,7 @@ jobs:
           path: dist/Jot-Windows.exe
 
   release:
-    needs: [build-macos, build-windows]
+    needs: [extract-version, build-macos, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write

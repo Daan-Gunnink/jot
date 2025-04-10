@@ -42,10 +42,10 @@ func (a *App) CheckForUpdates() string {
 	
 	if hasUpdate {
 		return fmt.Sprintf("Update available! Version %s is available (current: %s)", 
-			latestVersion, CurrentVersion)
+			latestVersion, Version)
 	}
 	
-	return fmt.Sprintf("You're running the latest version: %s", CurrentVersion)
+	return fmt.Sprintf("You're running the latest version: %s", Version)
 }
 
 // DownloadAndInstallUpdate downloads and installs the latest update
