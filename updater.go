@@ -85,8 +85,17 @@ func (u *UpdaterService) CheckForUpdates() (bool, string, error) {
 		return false, "", fmt.Errorf("error parsing latest version: %w", err)
 	}
 	
-	// Return whether an update is available and the latest version
-	if latestV.GreaterThan(currentV) {
+	// Check if there are assets available for the current platform
+	platformAssetAvailable := false
+	for _, asset := range release.Assets {
+		if asset.Name != nil && matchesPlatform(*asset.Name) {
+			platformAssetAvailable = true
+			break
+		}
+	}
+	
+	// Return whether an update is available, the latest version, and if it's available for this platform
+	if latestV.GreaterThan(currentV) && platformAssetAvailable {
 		return true, latestVersion, nil
 	}
 	
