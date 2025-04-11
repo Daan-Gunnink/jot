@@ -3,9 +3,9 @@ module jotthing
 go 1.23
 
 require (
+	github.com/fynelabs/selfupdate v0.2.0
 	github.com/google/go-github/v60 v60.0.0
 	github.com/hashicorp/go-version v1.7.0
-	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/wailsapp/wails/v2 v2.10.1
 )
 

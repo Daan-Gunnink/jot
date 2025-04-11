@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fynelabs/selfupdate"
 	"github.com/google/go-github/v60/github"
 	"github.com/hashicorp/go-version"
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
-	"github.com/inconshreveable/go-update"
 )
 
 // Version is the current version of the application.
@@ -78,6 +78,14 @@ func NewUpdaterService(owner, repo string) *UpdaterService {
 // Initialize stores the context for later use.
 func (u *UpdaterService) Initialize(ctx context.Context) {
 	u.ctx = ctx
+	
+	// Configure selfupdate logging
+	selfupdate.LogInfo = func(format string, v ...interface{}) {
+		fmt.Printf("[UPDATER INFO] "+format+"\n", v...)
+	}
+	selfupdate.LogError = func(format string, v ...interface{}) {
+		fmt.Printf("[UPDATER ERROR] "+format+"\n", v...)
+	}
 }
 
 // isBinaryAsset determines if the asset is a direct binary replacement
@@ -246,7 +254,7 @@ func (u *UpdaterService) ApplyUpdate(downloadPath string, updateInfo *UpdateInfo
 	}
 }
 
-// applyBinaryUpdate applies a direct binary update using go-update
+// applyBinaryUpdate applies a direct binary update using selfupdate
 func applyBinaryUpdate(downloadPath string, ctx context.Context) error {
 	// Notify user about the restart
 	wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
@@ -255,71 +263,59 @@ func applyBinaryUpdate(downloadPath string, ctx context.Context) error {
 		Message: "The application will now update and restart automatically.",
 	})
 	
-	// Open the downloaded binary
-	file, err := os.Open(downloadPath)
-	if err != nil {
-		return fmt.Errorf("error opening update file: %w", err)
-	}
-	defer file.Close()
+	// Create a local copy of the context to avoid issues in the goroutine
+	localCtx := ctx
 	
-	// Get the path to the current executable
-	execPath, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("error getting executable path: %w", err)
-	}
-	
-	// Apply the binary update
-	err = update.Apply(file, update.Options{})
-	if err != nil {
-		return fmt.Errorf("error applying update: %w", err)
-	}
-	
-	// Restart the application
+	// Apply the binary update and restart in a goroutine
 	go func() {
 		// Give the UI a moment to show the message dialog
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 		
-		// Start the new version of the app
-		restartApp(execPath)
+		// Open the downloaded binary inside the goroutine
+		file, err := os.Open(downloadPath)
+		if err != nil {
+			fmt.Printf("Error opening update file: %v\n", err)
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to open update file: %v", err),
+			})
+			return
+		}
+		// Close the file when done - within the goroutine
+		defer file.Close()
 		
-		// Quit this instance
-		wailsRuntime.Quit(ctx)
+		// Apply the update
+		err = selfupdate.Apply(file, selfupdate.Options{})
+		
+		if err != nil {
+			fmt.Printf("Error applying update: %v\n", err)
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to apply update: %v", err),
+			})
+			return
+		}
+		
+		// Try to restart the application after update
+		restartPath, err := os.Executable()
+		if err != nil {
+			fmt.Printf("Error getting executable path: %v\n", err)
+		} else {
+			// Start the updated application
+			cmd := exec.Command(restartPath)
+			err = cmd.Start()
+			if err != nil {
+				fmt.Printf("Error restarting: %v\n", err)
+			}
+		}
+		
+		// Quit the application anyway, as it has been updated
+		wailsRuntime.Quit(localCtx)
 	}()
 	
 	return nil
-}
-
-// restartApp starts the application after update
-func restartApp(execPath string) error {
-	// Create the command to restart the app
-	var cmd *exec.Cmd
-	
-	switch getOSName() {
-	case "darwin":
-		// For macOS, we need to find the .app container
-		appBundle := execPath
-		// If we're in the MacOS/Contents folder of an app bundle, go up to the .app
-		if strings.Contains(execPath, "Contents/MacOS") {
-			// Go up three levels from the binary to get to the .app
-			// e.g. /Applications/MyApp.app/Contents/MacOS/myapp -> /Applications/MyApp.app
-			appBundle = filepath.Dir(filepath.Dir(filepath.Dir(execPath)))
-		}
-		cmd = exec.Command("open", appBundle)
-	case "windows":
-		// For Windows, run the executable directly but detach from parent process
-		cmd = exec.Command("cmd", "/C", "start", execPath)
-	case "linux":
-		// For Linux, run the executable directly
-		cmd = exec.Command(execPath)
-	}
-	
-	if cmd != nil {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Start()
-	}
-	
-	return fmt.Errorf("unsupported platform for restart")
 }
 
 // Helper functions
@@ -376,11 +372,8 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 			Message: "The update will now open. Please follow the installation instructions and restart the application.",
 		})
 		
-		// Get the path to the current executable
-		execPath, err := os.Executable()
-		if err != nil {
-			return fmt.Errorf("error getting executable path: %w", err)
-		}
+		// Create a local copy of the context to avoid issues in the goroutine
+		localCtx := ctx
 		
 		// Run in a goroutine so we don't block the UI
 		go func() {
@@ -396,7 +389,7 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 			time.Sleep(5 * time.Second)
 			
 			// Show message about quitting
-			wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
 				Type:    wailsRuntime.InfoDialog,
 				Title:   "Update Complete",
 				Message: "The application will now quit. Please restart it after installation.",
@@ -406,7 +399,7 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 			time.Sleep(2 * time.Second)
 			
 			// Quit the app
-			wailsRuntime.Quit(ctx)
+			wailsRuntime.Quit(localCtx)
 		}()
 		
 		return nil
@@ -417,6 +410,9 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 			Title:   "Update Instructions",
 			Message: "The update will now install. Please follow the installation instructions and restart the application.",
 		})
+		
+		// Create a local copy of the context to avoid issues in the goroutine
+		localCtx := ctx
 		
 		go func() {
 			cmd := exec.Command("open", downloadPath)
@@ -430,7 +426,7 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 			time.Sleep(5 * time.Second)
 			
 			// Show message about quitting
-			wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
 				Type:    wailsRuntime.InfoDialog,
 				Title:   "Update Complete",
 				Message: "The application will now quit. Please restart it after installation.",
@@ -440,7 +436,7 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 			time.Sleep(2 * time.Second)
 			
 			// Quit the app
-			wailsRuntime.Quit(ctx)
+			wailsRuntime.Quit(localCtx)
 		}()
 		
 		return nil
@@ -450,12 +446,6 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 }
 
 func applyWindowsUpdate(downloadPath string, ctx context.Context) error {
-	// Get the path to the current executable
-	execPath, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("error getting executable path: %w", err)
-	}
-	
 	// For Windows, we typically work with .exe or .msi files
 	wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
 		Type:    wailsRuntime.InfoDialog,
@@ -463,32 +453,39 @@ func applyWindowsUpdate(downloadPath string, ctx context.Context) error {
 		Message: "The update will now install. Please follow the installation instructions. The application will restart automatically after installation.",
 	})
 	
+	// Create a local copy of the context to avoid issues in the goroutine
+	localCtx := ctx
+	
 	// Run the installer in a goroutine
 	go func() {
+		var installErr error
+		
 		// Start the installer
 		if strings.HasSuffix(strings.ToLower(downloadPath), ".msi") {
 			// For MSI installers
 			cmd := exec.Command("msiexec", "/i", downloadPath, "/quiet")
-			err := cmd.Run()
-			if err != nil {
-				fmt.Printf("Error running MSI installer: %v\n", err)
-				return
-			}
+			installErr = cmd.Run()
 		} else {
 			// For EXE installers
 			cmd := exec.Command(downloadPath)
-			err := cmd.Run()
-			if err != nil {
-				fmt.Printf("Error running EXE installer: %v\n", err)
-				return
-			}
+			installErr = cmd.Run()
+		}
+		
+		if installErr != nil {
+			fmt.Printf("Error running installer: %v\n", installErr)
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to run installer: %v", installErr),
+			})
+			return
 		}
 		
 		// Wait for the installation to complete
 		time.Sleep(10 * time.Second)
 		
 		// Show a message that we're restarting
-		wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
+		wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
 			Type:    wailsRuntime.InfoDialog,
 			Title:   "Update Complete",
 			Message: "The update has been installed. The application will now restart.",
@@ -497,11 +494,31 @@ func applyWindowsUpdate(downloadPath string, ctx context.Context) error {
 		// Wait a bit for user to read the message
 		time.Sleep(2 * time.Second)
 		
-		// Restart the application
-		restartApp(execPath)
+		// Try to restart the application
+		restartPath, err := os.Executable()
+		if err != nil {
+			fmt.Printf("Error getting executable path: %v\n", err)
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Restart Failed",
+				Message: "Could not restart the application automatically. Please restart it manually.",
+			})
+		} else {
+			// Start the updated application - create a detached process in Windows
+			cmd := exec.Command("cmd", "/C", "start", restartPath)
+			err = cmd.Start()
+			if err != nil {
+				fmt.Printf("Error restarting: %v\n", err)
+				wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+					Type:    wailsRuntime.ErrorDialog,
+					Title:   "Restart Failed",
+					Message: "Could not restart the application automatically. Please restart it manually.",
+				})
+			}
+		}
 		
 		// Quit this instance
-		wailsRuntime.Quit(ctx)
+		wailsRuntime.Quit(localCtx)
 	}()
 	
 	return nil
