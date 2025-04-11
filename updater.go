@@ -391,26 +391,4 @@ func applyLinuxUpdate(downloadPath string, ctx context.Context) error {
 	}
 	
 	return fmt.Errorf("unsupported file format for Linux: %s", downloadPath)
-}
-
-func main() {
-	// URL of the update file
-	updateURL := "https://example.com/path/to/update/file"
-
-	// Download the update
-	resp, err := http.Get(updateURL)
-	if err != nil {
-		fmt.Println("Error downloading update:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Apply the update
-	err = update.Apply(resp.Body, update.Options{})
-	if err != nil {
-		fmt.Println("Error applying update:", err)
-		return
-	}
-
-	fmt.Println("Update applied successfully!")
 } 
