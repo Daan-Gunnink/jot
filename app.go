@@ -51,13 +51,13 @@ func (a *App) CheckForUpdates() string {
 // DownloadAndInstallUpdate downloads and installs the latest update
 func (a *App) DownloadAndInstallUpdate() string {
 	// Download the update
-	downloadPath, err := a.updater.DownloadUpdate()
+	downloadPath, updateInfo, err := a.updater.DownloadUpdate()
 	if err != nil {
 		return fmt.Sprintf("Error downloading update: %s", err.Error())
 	}
 	
 	// Apply the update
-	err = a.updater.ApplyUpdate(downloadPath)
+	err = a.updater.ApplyUpdate(downloadPath, updateInfo)
 	if err != nil {
 		return fmt.Sprintf("Error applying update: %s", err.Error())
 	}
