@@ -6,10 +6,10 @@
     <Editor v-if="jot" :jot="jot" />
     <div v-else class="flex h-full w-full items-center justify-center flex-col">
       <Placeholder class="w-64 h-64" />
-      <div class="text-2xl text-center text-neutral mt-4">
+      <div class="text-2xl text-center text-base-content mt-4">
         You don't have any Jots yet
       </div>
-      <button @click="createFirstJot()" class="btn btn-neutral mt-4">
+      <button @click="createFirstJot()" class="btn btn-base-content mt-4">
         Create your first Jot
       </button>
     </div>

@@ -9,11 +9,11 @@
         exactActiveClass="bg-base-200"
       >
         <h2
-          class="text-lg font-bold text-ellipsis overflow-hidden line-clamp-1"
+          class="text-lg font-bold text-ellipsis overflow-hidden line-clamp-1 select-none"
         >
           {{ jot.title }}
         </h2>
-        <p class="text-sm text-base-content/70 text-end">{{ formattedDate }}</p>
+        <p class="text-sm text-base-content/70 text-end select-none">{{ formattedDate }}</p>
       </RouterLink>
     </ContextMenuTrigger>
 
