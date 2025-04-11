@@ -544,66 +544,104 @@ func applyWindowsUpdate(downloadPath string, ctx context.Context) error {
 	
 	// Run the installer in a goroutine
 	go func() {
-		var installErr error
-		
-		// Start the installer
-		if strings.HasSuffix(strings.ToLower(downloadPath), ".msi") {
-			// For MSI installers
-			cmd := exec.Command("msiexec", "/i", downloadPath, "/quiet")
-			installErr = cmd.Run()
-		} else {
-			// For EXE installers
-			cmd := exec.Command(downloadPath)
-			installErr = cmd.Run()
-		}
-		
-		if installErr != nil {
-			fmt.Printf("Error running installer: %v\n", installErr)
-			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
-				Type:    wailsRuntime.ErrorDialog,
-				Title:   "Update Failed",
-				Message: fmt.Sprintf("Failed to run installer: %v", installErr),
-			})
-			return
-		}
-		
-		// Wait for the installation to complete
-		time.Sleep(10 * time.Second)
-		
-		// Show a message that we're restarting
-		wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
-			Type:    wailsRuntime.InfoDialog,
-			Title:   "Update Complete",
-			Message: "The update has been installed. The application will now restart.",
-		})
-		
-		// Wait a bit for user to read the message
-		time.Sleep(2 * time.Second)
-		
-		// Try to restart the application
-		restartPath, err := os.Executable()
+		// Get the current executable path
+		execPath, err := os.Executable()
 		if err != nil {
 			fmt.Printf("Error getting executable path: %v\n", err)
 			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
 				Type:    wailsRuntime.ErrorDialog,
-				Title:   "Restart Failed",
-				Message: "Could not restart the application automatically. Please restart it manually.",
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to get executable path: %v", err),
 			})
-		} else {
-			// Start the updated application - create a detached process in Windows
-			cmd := exec.Command("cmd", "/C", "start", restartPath)
-			err = cmd.Start()
-			if err != nil {
-				fmt.Printf("Error restarting: %v\n", err)
-				wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
-					Type:    wailsRuntime.ErrorDialog,
-					Title:   "Restart Failed",
-					Message: "Could not restart the application automatically. Please restart it manually.",
-				})
-			}
+			return
 		}
 		
-		// Quit this instance
+		// Create a batch file that will:
+		// 1. Wait for our process to exit
+		// 2. Run the installer
+		// 3. Update the version in registry
+		// 4. Start the updated application
+		batchFile, err := os.CreateTemp("", "update-*.bat")
+		if err != nil {
+			fmt.Printf("Error creating batch file: %v\n", err)
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to create update script: %v", err),
+			})
+			return
+		}
+		
+		// Get process ID to wait for
+		pid := os.Getpid()
+		
+		// Get the new version from the update info
+		updateInfo, err := getUpdateInfo()
+		if err != nil {
+			fmt.Printf("Error getting update info: %v\n", err)
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to get update info: %v", err),
+			})
+			return
+		}
+		
+		// Create the batch script content
+		batchContent := fmt.Sprintf(`@echo off
+echo Waiting for application to close...
+:wait_loop
+tasklist /FI "PID eq %d" 2>NUL | find "%d" >NUL
+if %%ERRORLEVEL%% == 0 (
+    timeout /t 1 >NUL
+    goto wait_loop
+)
+
+echo Running installer...
+if "%s" == "*.msi" (
+    msiexec /i "%s" /quiet
+) else (
+    start /wait "" "%s"
+)
+
+echo Updating version in registry...
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Jot" /v "DisplayVersion" /t REG_SZ /d "%s" /f
+
+echo Starting updated application...
+start "" "%s"
+
+del "%%~f0"
+`, pid, pid, downloadPath, downloadPath, downloadPath, updateInfo.Version, execPath)
+		
+		if _, err := batchFile.WriteString(batchContent); err != nil {
+			fmt.Printf("Error writing batch file: %v\n", err)
+			batchFile.Close()
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to create update script: %v", err),
+			})
+			return
+		}
+		
+		batchFile.Close()
+		
+		// Execute the batch file (it will run in background)
+		cmd := exec.Command("cmd", "/C", "start", "/min", batchFile.Name())
+		if err := cmd.Start(); err != nil {
+			fmt.Printf("Error starting batch file: %v\n", err)
+			wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.ErrorDialog,
+				Title:   "Update Failed",
+				Message: fmt.Sprintf("Failed to start update process: %v", err),
+			})
+			return
+		}
+		
+		// Wait a moment to ensure the batch file has started
+		time.Sleep(1 * time.Second)
+		
+		// Quit this instance - the batch file will handle the rest
 		wailsRuntime.Quit(localCtx)
 	}()
 	
@@ -644,4 +682,35 @@ func applyLinuxUpdate(downloadPath string, ctx context.Context) error {
 	}
 	
 	return fmt.Errorf("unsupported file format for Linux: %s", downloadPath)
+}
+
+// getUpdateInfo retrieves the update information for the current platform
+func getUpdateInfo() (*UpdateInfo, error) {
+	client := github.NewClient(nil)
+	
+	// Get the latest release
+	release, _, err := client.Repositories.GetLatestRelease(context.Background(), "daan-gunnink", "jot")
+	if err != nil {
+		return nil, fmt.Errorf("error getting latest release: %w", err)
+	}
+	
+	// Find the appropriate asset for the current platform
+	for _, asset := range release.Assets {
+		name := *asset.Name
+		if matchesPlatform(name) {
+			updateType := PackageUpdate
+			if isBinaryAsset(name) {
+				updateType = BinaryUpdate
+			}
+			
+			return &UpdateInfo{
+				Type:        updateType,
+				Version:     strings.TrimPrefix(*release.TagName, "v"),
+				DownloadURL: *asset.BrowserDownloadURL,
+				AssetName:   name,
+			}, nil
+		}
+	}
+	
+	return nil, fmt.Errorf("no suitable update found for this platform")
 } 

@@ -2,3 +2,5 @@ build/bin
 node_modules
 frontend/dist
 .env
+# WebView2 setup files
+build/windows/installer/tmp/MicrosoftEdgeWebview2Setup.exe
