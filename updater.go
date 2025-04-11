@@ -271,6 +271,92 @@ func applyBinaryUpdate(downloadPath string, ctx context.Context) error {
 		// Give the UI a moment to show the message dialog
 		time.Sleep(1 * time.Second)
 		
+		// Special handling for Windows to avoid "access denied" error
+		if runtime.GOOS == "windows" {
+			// Get the path to the current executable and the update file
+			execPath, err := os.Executable()
+			if err != nil {
+				fmt.Printf("Error getting executable path: %v\n", err)
+				wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+					Type:    wailsRuntime.ErrorDialog,
+					Title:   "Update Failed",
+					Message: fmt.Sprintf("Failed to get executable path: %v", err),
+				})
+				return
+			}
+			
+			// Create a batch file that will:
+			// 1. Wait for our process to exit
+			// 2. Copy the new executable over the old one
+			// 3. Start the updated application
+			batchFile, err := os.CreateTemp("", "update-*.bat")
+			if err != nil {
+				fmt.Printf("Error creating batch file: %v\n", err)
+				wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+					Type:    wailsRuntime.ErrorDialog,
+					Title:   "Update Failed",
+					Message: fmt.Sprintf("Failed to create update script: %v", err),
+				})
+				return
+			}
+			
+			// Get process ID to wait for
+			pid := os.Getpid()
+			
+			// Create the batch script content
+			batchContent := fmt.Sprintf(`@echo off
+echo Waiting for application to close...
+:wait_loop
+tasklist /FI "PID eq %d" 2>NUL | find "%d" >NUL
+if %%ERRORLEVEL%% == 0 (
+    timeout /t 1 >NUL
+    goto wait_loop
+)
+echo Applying update...
+copy /Y "%s" "%s" >NUL
+if %%ERRORLEVEL%% == 0 (
+    echo Update successful, starting application...
+    start "" "%s"
+) else (
+    echo Update failed.
+)
+del "%%~f0"
+`, pid, pid, downloadPath, execPath, execPath)
+			
+			if _, err := batchFile.WriteString(batchContent); err != nil {
+				fmt.Printf("Error writing batch file: %v\n", err)
+				batchFile.Close()
+				wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+					Type:    wailsRuntime.ErrorDialog,
+					Title:   "Update Failed",
+					Message: fmt.Sprintf("Failed to create update script: %v", err),
+				})
+				return
+			}
+			
+			batchFile.Close()
+			
+			// Execute the batch file (it will run in background)
+			cmd := exec.Command("cmd", "/C", "start", "/min", batchFile.Name())
+			if err := cmd.Start(); err != nil {
+				fmt.Printf("Error starting batch file: %v\n", err)
+				wailsRuntime.MessageDialog(localCtx, wailsRuntime.MessageDialogOptions{
+					Type:    wailsRuntime.ErrorDialog,
+					Title:   "Update Failed",
+					Message: fmt.Sprintf("Failed to start update process: %v", err),
+				})
+				return
+			}
+			
+			// Wait a moment to ensure the batch file has started
+			time.Sleep(1 * time.Second)
+			
+			// Quit this instance - the batch file will wait for exit, replace the binary, and restart
+			wailsRuntime.Quit(localCtx)
+			return
+		}
+		
+		// Regular update flow for non-Windows platforms
 		// Open the downloaded binary inside the goroutine
 		file, err := os.Open(downloadPath)
 		if err != nil {
