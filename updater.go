@@ -81,25 +81,27 @@ func (u *UpdaterService) Initialize(ctx context.Context) {
 
 // isBinaryAsset determines if the asset is a direct binary replacement
 func isBinaryAsset(assetName string) bool {
-	// Binary assets should be named consistently
-	// For example: jot-darwin-amd64, jot-windows-amd64.exe, jot-linux-amd64
+	// Normalize the asset name to lowercase for comparison
+	lowerName := strings.ToLower(assetName)
 	osName := getOSName()
 	
 	// Define naming convention for binary assets
 	switch osName {
 	case "darwin":
-		return strings.Contains(assetName, "darwin") && 
-			   !strings.HasSuffix(assetName, ".dmg") && 
-			   !strings.HasSuffix(assetName, ".pkg")
+		return strings.Contains(lowerName, "darwin") && 
+			   strings.Contains(lowerName, "universal") &&
+			   !strings.HasSuffix(lowerName, ".dmg") && 
+			   !strings.HasSuffix(lowerName, ".pkg")
 	case "windows":
-		return strings.Contains(assetName, "windows") && 
-			   strings.HasSuffix(assetName, ".exe") &&
-			   !strings.Contains(assetName, "installer")
+		return strings.Contains(lowerName, "windows") && 
+			   strings.Contains(lowerName, "amd64") && 
+			   strings.HasSuffix(lowerName, ".exe") &&
+			   !strings.Contains(lowerName, "installer")
 	case "linux":
-		return strings.Contains(assetName, "linux") && 
-			   !strings.HasSuffix(assetName, ".deb") && 
-			   !strings.HasSuffix(assetName, ".rpm") &&
-			   !strings.HasSuffix(assetName, ".AppImage")
+		return strings.Contains(lowerName, "linux") && 
+			   !strings.HasSuffix(lowerName, ".deb") && 
+			   !strings.HasSuffix(lowerName, ".rpm") &&
+			   !strings.HasSuffix(lowerName, ".AppImage")
 	default:
 		return false
 	}

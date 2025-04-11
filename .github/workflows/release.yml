@@ -87,7 +87,7 @@ jobs:
         
       - name: Copy binary for auto-updates
         run: |
-          cp build/bin/jot dist/jot-darwin-universal
+          cp build/bin/Jot.app/Contents/MacOS/jot dist/jot-darwin-universal
       
       - name: Create .dmg installer
         run: |
@@ -97,12 +97,12 @@ jobs:
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
-            --icon "jot.app" 200 190 \
-            --hide-extension "jot.app" \
+            --icon "Jot.app" 200 190 \
+            --hide-extension "Jot.app" \
             --app-drop-link 600 185 \
             --no-internet-enable \
             dist/Jot-macOS.dmg \
-            build/bin/jot.app
+            build/bin/Jot.app
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
@@ -154,11 +154,15 @@ jobs:
         run: |
           wails build -platform windows/amd64 -nsis -ldflags "-X 'main.Version=${{ env.APP_VERSION }}'"
 
+      - name: Debug Windows build directory
+        run: |
+          Get-ChildItem -Path build/bin -Recurse | ForEach-Object { Write-Host $_.FullName }
+
       - name: Create dist directory
         run: New-Item -ItemType Directory -Force -Path dist
 
       - name: Copy Windows binary for auto-updates
-        run: Copy-Item -Path build/bin/jot.exe -Destination dist/jot-windows-amd64.exe
+        run: Copy-Item -Path build/bin/Jot.exe -Destination dist/jot-windows-amd64.exe
         
       - name: Copy Windows installer
         run: Copy-Item -Path build/bin/jot-amd64-installer.exe -Destination dist/Jot-Windows-Installer.exe
