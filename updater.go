@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/v60/github"
 	"github.com/hashicorp/go-version"
@@ -261,6 +262,12 @@ func applyBinaryUpdate(downloadPath string, ctx context.Context) error {
 	}
 	defer file.Close()
 	
+	// Get the path to the current executable
+	execPath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("error getting executable path: %w", err)
+	}
+	
 	// Apply the binary update
 	err = update.Apply(file, update.Options{})
 	if err != nil {
@@ -268,13 +275,51 @@ func applyBinaryUpdate(downloadPath string, ctx context.Context) error {
 	}
 	
 	// Restart the application
-	// This is platform specific and might require additional logic
-	// The application will restart with the new binary once the current process exits
+	go func() {
+		// Give the UI a moment to show the message dialog
+		time.Sleep(2 * time.Second)
+		
+		// Start the new version of the app
+		restartApp(execPath)
+		
+		// Quit this instance
+		wailsRuntime.Quit(ctx)
+	}()
 	
-	// Note: For Wails applications, we might need to use the Wails runtime to quit
-	// and have a separate mechanism to restart the app
-	wailsRuntime.Quit(ctx)
 	return nil
+}
+
+// restartApp starts the application after update
+func restartApp(execPath string) error {
+	// Create the command to restart the app
+	var cmd *exec.Cmd
+	
+	switch getOSName() {
+	case "darwin":
+		// For macOS, we need to find the .app container
+		appBundle := execPath
+		// If we're in the MacOS/Contents folder of an app bundle, go up to the .app
+		if strings.Contains(execPath, "Contents/MacOS") {
+			// Go up three levels from the binary to get to the .app
+			// e.g. /Applications/MyApp.app/Contents/MacOS/myapp -> /Applications/MyApp.app
+			appBundle = filepath.Dir(filepath.Dir(filepath.Dir(execPath)))
+		}
+		cmd = exec.Command("open", appBundle)
+	case "windows":
+		// For Windows, run the executable directly but detach from parent process
+		cmd = exec.Command("cmd", "/C", "start", execPath)
+	case "linux":
+		// For Linux, run the executable directly
+		cmd = exec.Command(execPath)
+	}
+	
+	if cmd != nil {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd.Start()
+	}
+	
+	return fmt.Errorf("unsupported platform for restart")
 }
 
 // Helper functions
@@ -331,32 +376,135 @@ func applyMacOSUpdate(downloadPath string, ctx context.Context) error {
 			Message: "The update will now open. Please follow the installation instructions and restart the application.",
 		})
 		
-		cmd := exec.Command("open", downloadPath)
-		return cmd.Run()
+		// Get the path to the current executable
+		execPath, err := os.Executable()
+		if err != nil {
+			return fmt.Errorf("error getting executable path: %w", err)
+		}
+		
+		// Run in a goroutine so we don't block the UI
+		go func() {
+			// Open the DMG
+			cmd := exec.Command("open", downloadPath)
+			err := cmd.Run()
+			if err != nil {
+				fmt.Printf("Error opening DMG: %v\n", err)
+				return
+			}
+			
+			// Wait a bit to let the user install
+			time.Sleep(5 * time.Second)
+			
+			// Show message about quitting
+			wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.InfoDialog,
+				Title:   "Update Complete",
+				Message: "The application will now quit. Please restart it after installation.",
+			})
+			
+			// Wait a bit for user to read the message
+			time.Sleep(2 * time.Second)
+			
+			// Quit the app
+			wailsRuntime.Quit(ctx)
+		}()
+		
+		return nil
 	} else if strings.HasSuffix(downloadPath, ".pkg") {
+		// Similar process for PKG files
 		wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
 			Type:    wailsRuntime.InfoDialog,
 			Title:   "Update Instructions",
 			Message: "The update will now install. Please follow the installation instructions and restart the application.",
 		})
 		
-		cmd := exec.Command("open", downloadPath)
-		return cmd.Run()
+		go func() {
+			cmd := exec.Command("open", downloadPath)
+			err := cmd.Run()
+			if err != nil {
+				fmt.Printf("Error opening PKG: %v\n", err)
+				return
+			}
+			
+			// Wait a bit to let the user install
+			time.Sleep(5 * time.Second)
+			
+			// Show message about quitting
+			wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
+				Type:    wailsRuntime.InfoDialog,
+				Title:   "Update Complete",
+				Message: "The application will now quit. Please restart it after installation.",
+			})
+			
+			// Wait a bit for user to read the message
+			time.Sleep(2 * time.Second)
+			
+			// Quit the app
+			wailsRuntime.Quit(ctx)
+		}()
+		
+		return nil
 	}
 	
 	return fmt.Errorf("unsupported file format for macOS: %s", downloadPath)
 }
 
 func applyWindowsUpdate(downloadPath string, ctx context.Context) error {
+	// Get the path to the current executable
+	execPath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("error getting executable path: %w", err)
+	}
+	
 	// For Windows, we typically work with .exe or .msi files
 	wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
 		Type:    wailsRuntime.InfoDialog,
 		Title:   "Update Instructions",
-		Message: "The update will now install. Please follow the installation instructions and restart the application.",
+		Message: "The update will now install. Please follow the installation instructions. The application will restart automatically after installation.",
 	})
 	
-	cmd := exec.Command("cmd", "/C", "start", downloadPath)
-	return cmd.Run()
+	// Run the installer in a goroutine
+	go func() {
+		// Start the installer
+		if strings.HasSuffix(strings.ToLower(downloadPath), ".msi") {
+			// For MSI installers
+			cmd := exec.Command("msiexec", "/i", downloadPath, "/quiet")
+			err := cmd.Run()
+			if err != nil {
+				fmt.Printf("Error running MSI installer: %v\n", err)
+				return
+			}
+		} else {
+			// For EXE installers
+			cmd := exec.Command(downloadPath)
+			err := cmd.Run()
+			if err != nil {
+				fmt.Printf("Error running EXE installer: %v\n", err)
+				return
+			}
+		}
+		
+		// Wait for the installation to complete
+		time.Sleep(10 * time.Second)
+		
+		// Show a message that we're restarting
+		wailsRuntime.MessageDialog(ctx, wailsRuntime.MessageDialogOptions{
+			Type:    wailsRuntime.InfoDialog,
+			Title:   "Update Complete",
+			Message: "The update has been installed. The application will now restart.",
+		})
+		
+		// Wait a bit for user to read the message
+		time.Sleep(2 * time.Second)
+		
+		// Restart the application
+		restartApp(execPath)
+		
+		// Quit this instance
+		wailsRuntime.Quit(ctx)
+	}()
+	
+	return nil
 }
 
 func applyLinuxUpdate(downloadPath string, ctx context.Context) error {
