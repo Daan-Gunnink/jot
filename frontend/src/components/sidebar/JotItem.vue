@@ -4,9 +4,9 @@
       <RouterLink
         :key="props.jot.id"
         :to="`/jot/${props.jot.id}`"
-        class="p-4 w-full hover:bg-base-300"
-        activeClass="bg-base-200"
-        exactActiveClass="bg-base-200"
+        class="p-4 w-full hover:bg-base-200 rounded-l-3xl"
+        activeClass="bg-base-100"
+        exactActiveClass="bg-base-100"
       >
         <h2
           class="text-lg font-bold text-ellipsis overflow-hidden line-clamp-1 select-none"
@@ -19,7 +19,7 @@
 
     <ContextMenuPortal>
       <ContextMenuContent
-        class="min-w-[220px] z-30 bg-base-100 border border-base-300 shadow-3xl hover:bg-neutral text-base-content hover:text-primary-content rounded-md p-[5px]"
+        class="min-w-[220px] z-30 bg-base-200 border border-base-100 shadow-3xl hover:bg-neutral text-base-content hover:text-primary-content rounded-md p-[5px]"
         :side-offset="5"
       >
         <ContextMenuItem
