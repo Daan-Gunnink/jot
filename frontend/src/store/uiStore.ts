@@ -23,4 +23,4 @@ export const useUIStore = defineStore(
       key: "ui-state",
     },
   },
-); 
+);
