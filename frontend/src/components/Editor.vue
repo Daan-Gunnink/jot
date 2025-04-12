@@ -1,5 +1,7 @@
 <template>
-  <editor-content :editor="editor" class="tiptap" />
+  <div class="w-full bg-base-100 h-full rounded-tl-3xl pt-2 px-4 overflow-clip overflow-y-auto">
+    <editor-content :editor="editor" class="tiptap" />
+  </div>
 </template>
 
 <script lang="ts" setup>

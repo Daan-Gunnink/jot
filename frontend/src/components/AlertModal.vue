@@ -27,7 +27,7 @@ defineProps<{
   <AlertDialogRoot :open="open">
     <AlertDialogPortal>
       <AlertDialogOverlay
-        class="bg-neutral-100/90 dark:bg-blackA9 data-[state=open]:animate-overlayShow fixed inset-0 z-30"
+        class="bg-base-300/50 backdrop-blur-md data-[state=open]:animate-overlayShow fixed inset-0 z-30"
       />
       <AlertDialogContent
         class="z-[100] text-sm data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-base-100 p-[25px] shadow-3xl focus:outline-none"
