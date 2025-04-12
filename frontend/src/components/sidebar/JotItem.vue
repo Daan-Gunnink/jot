@@ -13,7 +13,9 @@
         >
           {{ jot.title }}
         </h2>
-        <p class="text-sm text-base-content/70 text-end select-none">{{ formattedDate }}</p>
+        <p class="text-sm text-base-content/70 text-end select-none">
+          {{ formattedDate }}
+        </p>
       </RouterLink>
     </ContextMenuTrigger>
 

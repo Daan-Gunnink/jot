@@ -1,7 +1,11 @@
 <template>
-  <div v-if="showUpdateBanner"
-    class="absolute bottom-0 right-0 border-base-300 border shadow-md rounded-lg mb-8 mr-8 z-30 h-8 flex flex-row items-center justify-between py-1 px-2 gap-1">
-    <span  v-if="!isUpdating"  class="text-base-content text-xs cursor-default">New version {{ latestVersion }} available!</span>
+  <div
+    v-if="showUpdateBanner"
+    class="absolute bottom-0 right-0 border-base-300 border shadow-md rounded-lg mb-8 mr-8 z-30 h-8 flex flex-row items-center justify-between py-1 px-2 gap-1"
+  >
+    <span v-if="!isUpdating" class="text-base-content text-xs cursor-default"
+      >New version {{ latestVersion }} available!</span
+    >
     <div v-if="!isUpdating" class="flex flex-row items-center gap">
       <button class="btn btn-ghost btn-xs" @click="downloadAndInstall">
         {{ "Update" }}

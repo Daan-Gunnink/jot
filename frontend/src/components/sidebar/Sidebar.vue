@@ -42,7 +42,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-80  flex flex-col h-full bg-base-300">
+  <div class="w-80 flex flex-col h-full bg-base-300">
     <div class="p-2 border-b-2 border-b-base-300 flex flex-row items-center">
       <Logo class="w-10 h-10 fill-base-content" />
       <div class="text-2xl text-base-content font-extrabold">Jot</div>
