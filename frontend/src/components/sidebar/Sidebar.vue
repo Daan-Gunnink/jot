@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useJotStore } from "../../store/jotStore";
+import { useUIStore } from "../../store/uiStore";
 import { useRouter } from "vue-router";
 import Logo from "../../assets/Logo.vue";
 import JotItem from "./JotItem.vue";
 import { Environment } from "../../../wailsjs/runtime";
+import { Bars3Icon, PlusIcon } from "@heroicons/vue/24/outline";
 
 const jotStore = useJotStore();
+const uiStore = useUIStore();
 const router = useRouter();
 const jots = computed(() => jotStore.listJots());
 const system = ref<"darwin" | "windows" | null>(null);
+
+const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
 function handleJotDelete(id: string) {
   const newJotId = jotStore.deleteJot(id);
@@ -23,6 +28,10 @@ function handleJotDelete(id: string) {
 function createNewJot() {
   const id = jotStore.createJot();
   router.push(`/jot/${id}`);
+}
+
+function toggleSidebar() {
+  uiStore.toggleSidebar();
 }
 
 onMounted(async () => {
@@ -42,8 +51,28 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-80 flex flex-col h-full bg-base-300">
+  <div class="flex flex-col gap-2 absolute top-0 left-0 mt-2 ml-2 z-30">
+    <button
+      v-if="!isSidebarOpen"
+      class="btn btn-ghost btn-square"
+      @click="toggleSidebar"
+    >
+      <Bars3Icon class="w-6 h-6 fill-base-content" />
+    </button>
+    <button
+      v-if="!isSidebarOpen"
+      class="btn btn-ghost btn-square"
+      @click="createNewJot"
+    >
+      <PlusIcon class="w-6 h-6 fill-base-content" />
+    </button>
+  </div>
+
+  <div v-if="isSidebarOpen" class="w-80 flex flex-col h-full bg-base-300">
     <div class="p-2 border-b-2 border-b-base-300 flex flex-row items-center">
+      <button class="btn btn-ghost btn-square" @click="toggleSidebar">
+        <Bars3Icon class="w-6 h-6 fill-base-content" />
+      </button>
       <Logo class="w-10 h-10 fill-base-content" />
       <div class="text-2xl text-base-content font-extrabold">Jot</div>
     </div>

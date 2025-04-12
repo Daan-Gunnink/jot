@@ -1,10 +1,9 @@
 <template>
-  <div class="w-80">
-    <Sidebar />
-  </div>
+  <Sidebar />
   <div class="flex flex-col flex-1 bg-base-300">
-    <div class="h-4 bg-base-300"></div>
+    <div v-if="isSidebarOpen" class="h-4 bg-base-300"></div>
     <div
+      v-if="isSidebarOpen"
       class="absolute top-0 right-0 mr-8 fill-base-300 z-20 pointer-events-auto"
     >
       <div
@@ -50,17 +49,20 @@ import {
   onBeforeMount,
 } from "vue";
 import { useJotStore } from "../store/jotStore";
+import { useUIStore } from "../store/uiStore";
 import Placeholder from "../assets/Placeholder.vue";
 import Editor from "../components/Editor.vue";
-import type { Jot } from "../store/jotStore";
 import { SunIcon, MoonIcon } from "@heroicons/vue/24/outline";
 const router = useRouter();
 const jotStore = useJotStore();
+const uiStore = useUIStore();
 const isDarkMode = ref(
   localStorage.getItem("theme") === "dark" ||
     (!localStorage.getItem("theme") &&
       window.matchMedia("(prefers-color-scheme: dark)").matches),
 );
+
+const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
 const route = useRoute();
 const jotId = computed(() => {
@@ -144,6 +146,11 @@ const handleKeyDown = (event: KeyboardEvent) => {
     const id = jotStore.createJot();
     router.push(`/jot/${id}`);
   }
+
+  if ((event.metaKey || event.ctrlKey) && event.key === "/") {
+    event.preventDefault();
+    uiStore.toggleSidebar();
+  }
 };
 
 onMounted(() => {
@@ -162,20 +169,3 @@ onBeforeUnmount(() => {
   document.removeEventListener("keydown", handleKeyDown);
 });
 </script>
-
-<style scoped>
-.clip {
-  clip-path: inset(0 12px 0 0);
-}
-
-.clip-left-polygon {
-  clip-path: polygon(
-    0% 0%,
-    /* top-left */ 10% 10%,
-    /* slight curve in */ 8% 90%,
-    /* slight curve out */ 0% 100%,
-    /* bottom-left */ 100% 100%,
-    /* bottom-right */ 100% 0% /* top-right */
-  );
-}
-</style>

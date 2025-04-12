@@ -1,6 +1,7 @@
 <template>
   <div
     class="w-full bg-base-100 h-full rounded-tl-3xl pt-2 px-4 overflow-clip overflow-y-auto"
+    :class="{ 'pl-20 pt-6': !isSidebarOpen }"
   >
     <editor-content :editor="editor" class="tiptap" />
   </div>
@@ -23,13 +24,16 @@ import ListItem from "@tiptap/extension-list-item";
 import OrderedList from "@tiptap/extension-ordered-list";
 import BulletList from "@tiptap/extension-bullet-list";
 import Placeholder from "@tiptap/extension-placeholder";
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue";
 import { useJotStore } from "../store/jotStore";
+import { useUIStore } from "../store/uiStore";
 import type { JSONContent } from "@tiptap/vue-3";
 import type { Jot } from "../store/jotStore";
 
 const editor = ref<Editor>();
 const jotStore = useJotStore();
+const uiStore = useUIStore();
+const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
 const props = defineProps<{
   jot: Jot;
