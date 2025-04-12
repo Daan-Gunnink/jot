@@ -1,8 +1,5 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-interface UIState {
-  isSidebarOpen: boolean;
-}
 
 export const useUIStore = defineStore(
   "ui",
