@@ -108,7 +108,7 @@ onMounted(async () => {
     <div class="p-2">
       <SearchInput />
     </div>
-    <div ref="parentRef" class="flex-1 overflow-auto">
+    <div ref="parentRef" class="flex-1 overflow-auto ml-2">
       <div
         v-if="isLoading && currentSearchQuery"
         class="text-center p-4 text-base-content/50"

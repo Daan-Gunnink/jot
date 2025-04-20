@@ -1,18 +1,21 @@
 <template>
   <ContextMenuRoot class="w-full h-full">
     <ContextMenuTrigger as-child class="">
-      <div class="w-full h-full hover:bg-base-200 items-center justify-center p-4" :class="{
-        'bg-base-100': jotId === props.jot.id
-      }">
-        <RouterLink :key="props.jot.id" :to="`/jot/${props.jot.id}`">
-          <h2 class="text-lg font-bold text-ellipsis overflow-hidden line-clamp-1 select-none">
+
+      <RouterLink :key="props.jot.id" :to="`/jot/${props.jot.id}`" class="w-full h-full">
+        <div
+          class="w-full h-full hover:bg-base-200 items-center rounded-l-xl px-4 py-2 flex flex-col justify-between"
+          :class="{
+            'bg-base-100': jotId === props.jot.id
+          }">
+          <h2 class="text-base font-bold text-ellipsis overflow-hidden line-clamp-1 select-none self-start">
             {{ jot.title }}
           </h2>
-          <p class="text-sm text-base-content/70 text-end select-none">
+          <p class="text-xs text-base-content/50 text-end select-none self-end">
             {{ formattedDate }}
           </p>
-        </RouterLink>
-      </div>
+        </div>
+      </RouterLink>
     </ContextMenuTrigger>
 
     <ContextMenuPortal>
