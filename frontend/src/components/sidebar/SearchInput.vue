@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useJotStore } from "../../store/jotStore";
 
 const jotStore = useJotStore();
@@ -46,7 +46,7 @@ onMounted(() => {
   document.addEventListener("keydown", handleKeyDown);
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   document.removeEventListener("keydown", handleKeyDown);
   clearTimeout(debounceTimer);
 });

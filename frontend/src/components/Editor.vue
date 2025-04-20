@@ -1,9 +1,16 @@
 <template>
   <div
-    class="w-full bg-base-100 h-full rounded-tl-3xl pt-2 px-4 overflow-clip overflow-y-auto"
+    class="relative w-full bg-base-100 h-full rounded-tl-3xl pt-2 px-4 overflow-clip overflow-y-auto"
     :class="{ 'pl-20 pt-6': !isSidebarOpen }"
   >
     <editor-content :editor="editor" class="tiptap" />
+    <!-- Conditionally render the suggestion list -->
+    <SuggestionList
+      v-if="suggestionState.show && suggestionState.command"
+      :items="suggestionState.items"
+      :command="suggestionState.command"
+      :style="suggestionStyle"
+    />
   </div>
 </template>
 
@@ -24,22 +31,44 @@ import ListItem from "@tiptap/extension-list-item";
 import OrderedList from "@tiptap/extension-ordered-list";
 import BulletList from "@tiptap/extension-bullet-list";
 import Placeholder from "@tiptap/extension-placeholder";
-import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, computed, type CSSProperties } from "vue";
 import { useJotStore } from "../store/jotStore";
 import { useUIStore } from "../store/uiStore";
 import type { JSONContent } from "@tiptap/vue-3";
 import type { Jot } from "../db";
+
+// Import custom node and suggestion config
+import { NoteLinkNode } from "./editor/NoteLinkNode";
+import { useSharedSuggestionState } from "./editor/suggestionUtils";
+import SuggestionList from "./editor/SuggestionList.vue";
 
 const editor = ref<Editor>();
 const jotStore = useJotStore();
 const uiStore = useUIStore();
 const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
-const props = defineProps<{
-  jot: Jot;
-}>();
+// Get the shared suggestion state
+const suggestionState = useSharedSuggestionState();
+
+const props = defineProps<{ jot: Jot }>();
 
 let debounceTimeout: number | null = null;
+
+// Calculate positioning style for the suggestion list
+const suggestionStyle = computed((): CSSProperties => {
+  const rect = suggestionState.value.clientRect;
+  if (!rect) {
+    return { position: 'absolute', visibility: 'hidden' };
+  }
+  // Position below the cursor, considering scroll position
+  // You might need to adjust this based on your editor container's scrolling
+  return {
+    position: 'absolute',
+    left: `${rect.left}px`,
+    top: `${rect.bottom + window.scrollY}px`, // Adjust if editor scrolls independently
+    zIndex: 50, // Ensure it's above editor content
+  };
+});
 
 const debounce = (func: (...args: unknown[]) => void, delay: number) => {
   // Clear any existing timeout
@@ -66,8 +95,9 @@ const storeEditorContentWithDebounce = (
 watch(
   () => props.jot.id,
   (newJotId, oldJotId) => {
-    if (newJotId !== oldJotId) {
-      editor.value?.commands.setContent(props.jot.content);
+    if (newJotId !== oldJotId && editor.value) {
+      // Use `setContent` carefully, it resets history. Consider `setNodeContent` if possible.
+      editor.value.commands.setContent(props.jot.content, false); // false = don't emit update
     }
   },
 );
@@ -93,20 +123,30 @@ onMounted(() => {
       Italic,
       Blockquote,
       HorizontalRule,
-      TaskItem,
+      TaskItem.configure({
+        nested: true, // Allow nested task items if desired
+      }),
       TaskList,
       Placeholder.configure({
         placeholder: "Start writing something...",
       }),
+      // Add our custom node (which now includes the suggestion plugin)
+      NoteLinkNode,
     ],
     onUpdate: () => {
-      const firstHeading =
-        editor.value
-          ?.getJSON()
-          ?.content?.find((node) => node.type === "heading") ?? undefined;
+      if (!editor.value) return;
+      const jsonContent = editor.value.getJSON();
+      let firstHeadingText: string | undefined = undefined;
+
+      // Safely find the first heading's text content
+      const firstContentNode = jsonContent?.content?.[0];
+      if (firstContentNode?.type === 'heading') {
+        firstHeadingText = firstContentNode.content?.map(node => node.text || '').join('');
+      }
+
       storeEditorContentWithDebounce(
-        firstHeading?.content?.map((node) => node.text).join(""),
-        editor.value?.getJSON(),
+        firstHeadingText,
+        jsonContent
       );
     },
   });
@@ -114,16 +154,21 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   editor.value?.destroy();
+  if (debounceTimeout !== null) {
+    window.clearTimeout(debounceTimeout);
+  }
 });
 </script>
 
 <style scoped>
 .tiptap {
   height: 100%;
+  min-height: 200px; /* Ensure minimum height for editor */
 }
 
 .tiptap :deep(.ProseMirror) {
   height: 100%;
+  min-height: inherit; /* Inherit min-height */
 }
 
 .tiptap :deep(.ProseMirror-focused) {
@@ -218,5 +263,10 @@ onBeforeUnmount(() => {
       flex: 1 1 auto;
     }
   }
+}
+
+/* Add specific styling for the note link component if needed */
+.tiptap :deep(.note-link-component) {
+  /* Handled by the component itself using Tailwind */
 }
 </style>
