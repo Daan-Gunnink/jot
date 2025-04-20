@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Jot } from "../../store/jotStore";
+import type { Jot } from "../../db";
 import dayjs from "dayjs";
 import { computed, ref } from "vue";
 import AlertModal from "../AlertModal.vue";
