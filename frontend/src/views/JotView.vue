@@ -53,9 +53,11 @@ import { useUIStore } from "../store/uiStore";
 import Placeholder from "../assets/Placeholder.vue";
 import Editor from "../components/Editor.vue";
 import { SunIcon, MoonIcon } from "@heroicons/vue/24/outline";
+import type { Jot } from "../db";
 const router = useRouter();
 const jotStore = useJotStore();
 const uiStore = useUIStore();
+
 const isDarkMode = ref(
   localStorage.getItem("theme") === "dark" ||
     (!localStorage.getItem("theme") &&
@@ -69,24 +71,25 @@ const jotId = computed(() => {
   return route.params.id ? String(route.params.id) : jotStore.currentJotId;
 });
 
-const jot = computed(() => {
-  if (!jotId.value) return undefined;
-  return jotStore.getJotById(jotId.value as string);
-});
+const jot = ref<Jot | undefined>(undefined)
+
+watch(() => jotId.value, async () => {
+  jot.value = await jotStore.getJotById(jotId.value as string);
+}, {immediate: true});
 
 function createFirstJot() {
   const id = jotStore.createJot();
   router.push(`/jot/${id}`);
 }
 
-function loadJotState() {
+async function loadJotState() {
   if (jotStore.isEmpty) {
     return;
   }
 
   if (!jotId.value || !jot.value) {
     // If there's no valid ID or the jot doesn't exist, navigate to the latest jot
-    const latestJot = jotStore.getLatestJot();
+    const latestJot = await jotStore.getLatestJot();
     if (latestJot) {
       router.push(`/jot/${latestJot.id}`);
     }
@@ -96,18 +99,18 @@ function loadJotState() {
   jotStore.setCurrentJotId(jotId.value as string);
 }
 
-onBeforeMount(() => {
-  loadJotState();
+onBeforeMount(async () => {
+  await loadJotState();
 });
 
 // Watch for route changes to update the state
-watch(route, () => {
-  loadJotState();
+watch(route, async () => {
+  await loadJotState();
 });
 
 // Watch for changes in the store's jots array to handle deletion
 watch(
-  () => jotStore.jots.length,
+  () => jotStore.reactiveJots?.length,
   () => {
     loadJotState();
   },

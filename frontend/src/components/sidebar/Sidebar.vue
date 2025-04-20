@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { storeToRefs } from 'pinia';
 import { useJotStore } from "../../store/jotStore";
 import { useUIStore } from "../../store/uiStore";
 import { useRouter } from "vue-router";
@@ -7,12 +8,26 @@ import Logo from "../../assets/Logo.vue";
 import JotItem from "./JotItem.vue";
 import { Environment } from "../../../wailsjs/runtime";
 import { Bars3Icon, PlusIcon } from "@heroicons/vue/24/outline";
+import SearchInput from "./SearchInput.vue";
 
 const jotStore = useJotStore();
 const uiStore = useUIStore();
 const router = useRouter();
-const jots = computed(() => jotStore.listJots());
+
+const { reactiveJots, searchResults, currentSearchQuery, isLoading } = storeToRefs(jotStore);
+
 const system = ref<"darwin" | "windows" | null>(null);
+
+const displayedJots = computed(() => {
+  if (searchResults.value !== null) {
+    return searchResults.value;
+  }
+  return reactiveJots.value ?? [];
+});
+
+const noResultsFound = computed(() => {
+  return jotStore.currentSearchQuery && jotStore.searchResults?.length === 0;
+});
 
 const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
@@ -76,9 +91,19 @@ onMounted(async () => {
       <Logo class="w-10 h-10 fill-base-content" />
       <div class="text-2xl text-base-content font-extrabold">Jot</div>
     </div>
-    <div class="flex flex-col flex-1 overflow-auto">
+    <div class="p-2">
+      <SearchInput />
+    </div>
+    <div class="flex flex-col flex-1 overflow-auto p-2">
+      <div v-if="isLoading && currentSearchQuery" class="text-center p-4 text-base-content/50">
+        Searching...
+      </div>
+      <div v-else-if="noResultsFound" class="text-center p-4 text-base-content/50">
+        No results found for "{{ currentSearchQuery }}"
+      </div>
       <JotItem
-        v-for="jot in jots"
+        v-else
+        v-for="jot in displayedJots"
         :key="jot.id"
         :jot="jot"
         @onDelete="handleJotDelete(jot.id)"
