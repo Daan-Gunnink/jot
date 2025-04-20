@@ -2,19 +2,9 @@ import type { JSONContent } from "@tiptap/vue-3";
 import { defineStore, storeToRefs } from "pinia";
 import { ref, computed, type Ref } from "vue";
 import { v4 as uuidv4 } from "uuid";
-// Import Jot type from db.ts instead of defining it here
 import type { Jot } from "../db";
 import * as jotService from "../services/jotService";
-// Remove unused Pinia persistence types
-// import type { StateTree } from "pinia";
-// import type { PersistenceOptions } from "pinia-plugin-persistedstate";
-import Fuse, { type IFuseOptions } from 'fuse.js'; // <-- Fix import
-
-// Remove local Jot interface definition - use the one from db.ts
-
-// Remove JotState interface if not needed elsewhere, Pinia infers state type
-
-// Remove SerializedJot interface, not needed
+import Fuse, { type IFuseOptions } from 'fuse.js'
 
 // Helper function to limit title length (keep if still used, maybe move to utils)
 // function limitTitleLength(title: string, maxLength = 50): string {
@@ -28,9 +18,9 @@ export const useJotStore = defineStore(
     // Remove the local jots ref - data comes from Dexie service
     // const jots = ref<Jot[]>([]);
     const currentJotId = ref<string | null>(null);
-    const isLoading = ref<boolean>(true); // Add loading state
-    const currentSearchQuery = ref<string>(''); // State for the search input
-    const searchResults = ref<Jot[] | null>(null); // State for search results (null = no search active)
+    const isLoading = ref<boolean>(true);
+    const currentSearchQuery = ref<string>('');
+    const searchResults = ref<Jot[] | null>(null);
 
     // --- Initialization ---
     // Action to load initial state from Dexie
@@ -53,14 +43,8 @@ export const useJotStore = defineStore(
       }
     };
 
-    // --- Reactive Data (Optional, requires dependencies) ---
-    // Provides a reactive list directly from Dexie liveQuery
-    // Requires npm install @vueuse/rxjs rxjs
+
     const reactiveJots = jotService.listJotsReactive();
-
-
-    // --- Actions (now mostly async wrappers for jotService) ---
-
 
     const migrateJots = async (): Promise<void> => {
       if (localStorage.getItem("dexieMigrationCompleted")) {
@@ -96,7 +80,6 @@ export const useJotStore = defineStore(
 
 
       localStorage.setItem("dexieMigrationCompleted", "true");
-      localStorage.removeItem("jot");
     };
 
     const createJot = async (
@@ -203,11 +186,8 @@ export const useJotStore = defineStore(
         }
 
         isLoading.value = true;
+        console.log("Performing search:", currentSearchQuery.value);
         try {
-            // Ensure reactiveJots has loaded its initial value if needed
-            // Depending on how listJotsReactive() works, you might need
-            // to ensure it's populated before searching. For simplicity,
-            // we assume it holds the current state.
             const allJots = reactiveJots.value;
 
             if (!allJots || allJots.length === 0) {
@@ -219,25 +199,17 @@ export const useJotStore = defineStore(
             // 2. Configure Fuse.js
             const fuseOptions: IFuseOptions<Jot> = {
                 keys: [
-                    { name: 'title', weight: 0.7 }, // Give title slightly more weight
-                    { name: 'textContent', weight: 0.3 }
+                    { name: 'title', weight: 0.7 },
+                    { name: 'textContent', weight: 0.6 }
                 ],
-                includeScore: false, // Set to true if you want score for ranking/debugging
-                threshold: 0.4, // Adjust this threshold (0=exact, 1=match anything)
-                // Other options like distance, minMatchCharLength can be added here
-                // See Fuse.js documentation: https://fusejs.io/api/options.html
+                includeScore: false, 
+                threshold: 0.4, 
             };
 
-            // 3. Create Fuse instance
-            // For large datasets, consider creating/updating this instance less frequently
             const fuse = new Fuse(allJots, fuseOptions);
 
             // 4. Perform the search
             const results = fuse.search(currentSearchQuery.value);
-
-            // 5. Update the searchResults state
-            // Results contain { item: Jot, refIndex: number, score?: number }
-            // We only need the item itself
             searchResults.value = results.map(result => result.item);
 
         } catch (error) {

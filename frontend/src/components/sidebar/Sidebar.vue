@@ -40,8 +40,8 @@ function handleJotDelete(id: string) {
   }
 }
 
-function createNewJot() {
-  const id = jotStore.createJot();
+async function createNewJot() {
+  const id = await jotStore.createJot();
   router.push(`/jot/${id}`);
 }
 

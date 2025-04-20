@@ -21,14 +21,12 @@ export interface SearchIndexEntry {
 export class JotDatabase extends Dexie {
   // Declare tables
   jots!: Table<Jot, string>; // Primary key is string (the UUID)
-  searchIndex!: Table<SearchIndexEntry, number>; // Primary key is number (auto-incrementing)
 
   constructor() {
     super('JotDatabase'); // Database name
     this.version(1).stores({
       // Schema definition for version 1
       jots: '&id, title, updatedAt, textContent', // &id = Primary key, unique. Index title, updatedAt. textContent is stored but not indexed here directly.
-      searchIndex: '++id, word, jotId, [word+jotId]', // ++id = Auto-incrementing PK. Index word, jotId. Compound index for efficient lookup and uniqueness.
     });
   }
 }

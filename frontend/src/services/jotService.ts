@@ -1,62 +1,9 @@
-import { db, type Jot, type SearchIndexEntry } from '../db';
+import { db, type Jot } from '../db';
 import { extractTextFromTipTap } from '../utils/tiptapUtils';
 import type { JSONContent } from '@tiptap/vue-3';
 import { liveQuery } from 'dexie';
 import { useObservable } from "@vueuse/rxjs";
 import { from } from 'rxjs';
-
-// --- Tokenization ---
-
-/**
- * Simple tokenizer: converts to lowercase, splits by non-alphanumeric,
- * filters out empty strings and short words.
- * TODO: Consider adding stop word filtering.
- * @param text The text to tokenize.
- * @returns An array of unique words (tokens).
- */
-function tokenize(text: string): string[] {
-  if (!text) return [];
-  const words = text
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter(word => word.length > 2); // Ignore short words (e.g., <= 2 chars)
-  return [...new Set(words)]; // Return unique words
-}
-
-// --- Search Index Management ---
-
-/**
- * Updates the search index for a given Jot.
- * Clears existing entries and adds new ones based on title and textContent.
- * @param jotId The ID of the Jot.
- * @param title The title of the Jot.
- * @param textContent The plain text content of the Jot.
- */
-async function updateSearchIndex(jotId: string, title: string, textContent: string): Promise<void> {
-  // Use a transaction for atomicity
-  await db.transaction('rw', db.searchIndex, async () => {
-    // 1. Clear existing index entries for this jotId
-    await db.searchIndex.where({ jotId }).delete();
-
-    // 2. Tokenize title and content
-    const titleTokens = tokenize(title);
-    const contentTokens = tokenize(textContent);
-    const allTokens = [...new Set([...titleTokens, ...contentTokens])]; // Combine and ensure uniqueness
-
-    // 3. Prepare new index entries
-    const entries: SearchIndexEntry[] = allTokens.map(word => ({
-      word,
-      jotId,
-    }));
-
-    // 4. Bulk add new entries
-    if (entries.length > 0) {
-      await db.searchIndex.bulkAdd(entries);
-    }
-  });
-}
-
-// --- CRUD Operations ---
 
 /**
  * Adds a new Jot to the database and updates the search index.
@@ -76,9 +23,8 @@ export async function addJot(jotData: { title: string; content: JSONContent }, i
     updatedAt: now,
   };
 
-  await db.transaction('rw', db.jots, db.searchIndex, async () => {
+  await db.transaction('rw', db.jots, async () => {
     await db.jots.add(newJot);
-    await updateSearchIndex(newJot.id, newJot.title, newJot.textContent);
   });
 
   return newJot;
@@ -120,11 +66,8 @@ export async function updateJot(id: string | null | undefined, updateData: { tit
     }
   }
 
-  await db.transaction('rw', db.jots, db.searchIndex, async () => {
+  await db.transaction('rw', db.jots, async () => {
     await db.jots.update(id, updatedJot);
-    if (needsIndexUpdate) {
-      await updateSearchIndex(id, updatedJot.title ?? jot.title, newTextContent);
-    }
   });
 
   // Return the full updated jot
@@ -137,13 +80,11 @@ export async function updateJot(id: string | null | undefined, updateData: { tit
  * @param id The ID of the Jot to delete.
  */
 export async function deleteJot(id: string): Promise<void> {
-  await db.transaction('rw', db.jots, db.searchIndex, async () => {
+  await db.transaction('rw', db.jots, async () => {
     await db.jots.delete(id);
-    await db.searchIndex.where({ jotId: id }).delete();
   });
 }
 
-// --- Read Operations ---
 
 /**
  * Retrieves a single Jot by its ID.
@@ -178,57 +119,3 @@ export function listJotsReactive() {
 export async function getLatestJot(): Promise<Jot | undefined> {
     return db.jots.orderBy('updatedAt').reverse().first();
 }
-
-// --- Search Function ---
-
-/**
- * Searches for Jots based on a query string.
- * Tokenizes the query and finds matching Jots via the searchIndex table.
- * @param query The search query string.
- * @returns A promise resolving to an array of matching Jot objects, potentially ranked or sorted.
- */
-export async function searchJots(query: string): Promise<Jot[]> {
-  const queryTokens = tokenize(query);
-
-  if (queryTokens.length === 0) {
-    return []; // No valid tokens to search for
-  }
-
-  // Find all index entries matching any of the query tokens
-  const matchingIndexEntries = await db.searchIndex
-    .where('word')
-    .anyOf(queryTokens)
-    .toArray();
-
-  if (matchingIndexEntries.length === 0) {
-    return []; // No matches found
-  }
-
-  // Extract unique Jot IDs
-  const jotIds = [...new Set(matchingIndexEntries.map(entry => entry.jotId))];
-
-  // --- Basic Ranking (Optional but Recommended) ---
-  // Count how many query tokens match for each jotId
-  const jotScores: { [id: string]: number } = {};
-  matchingIndexEntries.forEach(entry => {
-    jotScores[entry.jotId] = (jotScores[entry.jotId] || 0) + 1;
-  });
-
-  // Sort jotIds by score (descending)
-  const sortedJotIds = jotIds.sort((a, b) => (jotScores[b] || 0) - (jotScores[a] || 0));
-
-  // Fetch the full Jot objects for the matching IDs
-  // Use bulkGet for efficiency
-  const jots = await db.jots.bulkGet(sortedJotIds);
-
-  // Filter out any undefined results (if a Jot was deleted but index wasn't updated somehow)
-  // and return in the order determined by ranking
-  return jots.filter((jot): jot is Jot => jot !== undefined);
-
-  // --- Alternative: No Ranking (Simpler) ---
-  /*
-  const jots = await db.jots.where('id').anyOf(jotIds).toArray();
-  // Maybe sort by updatedAt as a default?
-  return jots.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-  */
-} 
