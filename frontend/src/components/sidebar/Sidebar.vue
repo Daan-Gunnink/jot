@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 import { useJotStore } from "../../store/jotStore";
 import { useUIStore } from "../../store/uiStore";
 import { useRouter } from "vue-router";
@@ -7,14 +8,46 @@ import Logo from "../../assets/Logo.vue";
 import JotItem from "./JotItem.vue";
 import { Environment } from "../../../wailsjs/runtime";
 import { Bars3Icon, PlusIcon } from "@heroicons/vue/24/outline";
+import SearchInput from "./SearchInput.vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 
 const jotStore = useJotStore();
 const uiStore = useUIStore();
 const router = useRouter();
-const jots = computed(() => jotStore.listJots());
+
+const { reactiveJots, searchResults, currentSearchQuery, isLoading } =
+  storeToRefs(jotStore);
+
 const system = ref<"darwin" | "windows" | null>(null);
 
+const displayedJots = computed(() => {
+  if (searchResults.value !== null) {
+    return searchResults.value;
+  }
+  return reactiveJots.value ?? [];
+});
+
+const noResultsFound = computed(() => {
+  return jotStore.currentSearchQuery && jotStore.searchResults?.length === 0;
+});
+
 const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
+
+// --- Virtualization Setup ---
+const parentRef = ref<HTMLElement | null>(null);
+
+const virtualizerOptions = computed(() => ({
+  count: displayedJots.value.length,
+  getScrollElement: () => parentRef.value,
+  estimateSize: () => 64,
+  overscan: 10,
+}));
+
+const rowVirtualizer = useVirtualizer(virtualizerOptions);
+
+const virtualItems = computed(() => rowVirtualizer.value.getVirtualItems());
+const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
+// --- End Virtualization Setup ---
 
 function handleJotDelete(id: string) {
   const newJotId = jotStore.deleteJot(id);
@@ -25,8 +58,8 @@ function handleJotDelete(id: string) {
   }
 }
 
-function createNewJot() {
-  const id = jotStore.createJot();
+async function createNewJot() {
+  const id = await jotStore.createJot();
   router.push(`/jot/${id}`);
 }
 
@@ -76,13 +109,48 @@ onMounted(async () => {
       <Logo class="w-10 h-10 fill-base-content" />
       <div class="text-2xl text-base-content font-extrabold">Jot</div>
     </div>
-    <div class="flex flex-col flex-1 overflow-auto">
-      <JotItem
-        v-for="jot in jots"
-        :key="jot.id"
-        :jot="jot"
-        @onDelete="handleJotDelete(jot.id)"
-      />
+    <div class="p-2">
+      <SearchInput />
+    </div>
+    <div ref="parentRef" class="flex-1 overflow-auto ml-2">
+      <div
+        v-if="isLoading && currentSearchQuery"
+        class="text-center p-4 text-base-content/50"
+      >
+        Searching...
+      </div>
+      <div
+        v-else-if="noResultsFound"
+        class="text-center p-4 text-base-content/50"
+      >
+        No results found for "{{ currentSearchQuery }}"
+      </div>
+      <div
+        v-else
+        :style="{
+          height: `${totalSize}px`,
+          width: '100%',
+          position: 'relative',
+        }"
+      >
+        <div
+          v-for="virtualRow in virtualItems"
+          :key="String(virtualRow.key)"
+          :style="{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: `${virtualRow.size}px`,
+            transform: `translateY(${virtualRow.start}px)`,
+          }"
+        >
+          <JotItem
+            :jot="displayedJots[virtualRow.index]"
+            @onDelete="handleJotDelete(displayedJots[virtualRow.index].id)"
+          />
+        </div>
+      </div>
     </div>
     <div class="p-4 border-t-2 border-t-base-300">
       <button @click="createNewJot" class="btn btn-neutral w-full">

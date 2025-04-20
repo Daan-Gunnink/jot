@@ -4,18 +4,23 @@
       <RouterLink
         :key="props.jot.id"
         :to="`/jot/${props.jot.id}`"
-        class="p-4 w-full hover:bg-base-200 rounded-l-3xl"
-        activeClass="bg-base-100"
-        exactActiveClass="bg-base-100"
+        class="w-full h-full"
       >
-        <h2
-          class="text-lg font-bold text-ellipsis overflow-hidden line-clamp-1 select-none"
+        <div
+          class="w-full h-full hover:bg-base-200 items-center rounded-l-xl px-4 py-2 flex flex-col justify-between"
+          :class="{
+            'bg-base-100': jotId === props.jot.id,
+          }"
         >
-          {{ jot.title }}
-        </h2>
-        <p class="text-sm text-base-content/70 text-end select-none">
-          {{ formattedDate }}
-        </p>
+          <h2
+            class="text-base font-bold text-ellipsis overflow-hidden line-clamp-1 select-none self-start"
+          >
+            {{ jot.title }}
+          </h2>
+          <p class="text-xs text-base-content/50 text-end select-none self-end">
+            {{ formattedDate }}
+          </p>
+        </div>
       </RouterLink>
     </ContextMenuTrigger>
 
@@ -45,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Jot } from "../../store/jotStore";
+import type { Jot } from "../../db";
 import dayjs from "dayjs";
 import { computed, ref } from "vue";
 import AlertModal from "../AlertModal.vue";
@@ -59,6 +64,11 @@ import {
 const props = defineProps<{
   jot: Jot;
 }>();
+
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+const jotId = computed(() => route.params.id);
 
 const displayDeleteConfirmation = ref(false);
 

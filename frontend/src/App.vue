@@ -1,5 +1,13 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import UpdaterService from "./components/UpdaterService.vue";
+import { useJotStore } from "./store/jotStore";
+
+const jotStore = useJotStore();
+
+onMounted(async () => {
+  await jotStore.migrateJots();
+});
 </script>
 
 <template>

@@ -28,7 +28,7 @@ import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue";
 import { useJotStore } from "../store/jotStore";
 import { useUIStore } from "../store/uiStore";
 import type { JSONContent } from "@tiptap/vue-3";
-import type { Jot } from "../store/jotStore";
+import type { Jot } from "../db";
 
 const editor = ref<Editor>();
 const jotStore = useJotStore();
