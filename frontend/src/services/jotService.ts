@@ -1,9 +1,10 @@
-import { db, type Jot } from '../db';
-import { extractTextFromTipTap } from '../utils/tiptapUtils';
-import type { JSONContent } from '@tiptap/vue-3';
-import { liveQuery } from 'dexie';
+import { db, type Jot } from "../db";
+import { extractTextFromTipTap } from "../utils/tiptapUtils";
+import type { JSONContent } from "@tiptap/vue-3";
+import { liveQuery } from "dexie";
 import { useObservable } from "@vueuse/rxjs";
-import { from } from 'rxjs';
+import { from } from "rxjs";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Adds a new Jot to the database and updates the search index.
@@ -11,7 +12,10 @@ import { from } from 'rxjs';
  * @param id The UUID for the new Jot.
  * @returns The newly created Jot object.
  */
-export async function addJot(jotData: { title: string; content: JSONContent }, id: string): Promise<Jot> {
+export async function addJot(
+  jotData: { title: string; content: JSONContent },
+  id: string,
+): Promise<Jot> {
   const textContent = extractTextFromTipTap(jotData.content);
   const now = new Date();
 
@@ -23,7 +27,7 @@ export async function addJot(jotData: { title: string; content: JSONContent }, i
     updatedAt: now,
   };
 
-  await db.transaction('rw', db.jots, async () => {
+  await db.transaction("rw", db.jots, async () => {
     await db.jots.add(newJot);
   });
 
@@ -36,10 +40,13 @@ export async function addJot(jotData: { title: string; content: JSONContent }, i
  * @param updateData Object containing optional title and content updates.
  * @returns The updated Jot object or null if not found or ID is invalid.
  */
-export async function updateJot(id: string | null | undefined, updateData: { title?: string; content?: JSONContent }): Promise<Jot | null> {
+export async function updateJot(
+  id: string | null | undefined,
+  updateData: { title?: string; content?: JSONContent },
+): Promise<Jot | null> {
   // Add check for valid ID before querying Dexie
-  if (typeof id !== 'string' || id === '') {
-    console.warn('updateJot called with invalid ID:', id);
+  if (typeof id !== "string" || id === "") {
+    console.warn("updateJot called with invalid ID:", id);
     return null;
   }
 
@@ -47,26 +54,21 @@ export async function updateJot(id: string | null | undefined, updateData: { tit
   const jot = await db.jots.get(id);
   if (!jot) return null;
 
-  let needsIndexUpdate = false;
   const updatedJot: Partial<Jot> = { updatedAt: new Date() };
 
   if (updateData.title !== undefined && updateData.title !== jot.title) {
     updatedJot.title = updateData.title;
-    needsIndexUpdate = true;
   }
 
-  let newTextContent = jot.textContent;
   if (updateData.content !== undefined) {
     const calculatedTextContent = extractTextFromTipTap(updateData.content);
     if (calculatedTextContent !== jot.textContent) {
       updatedJot.content = updateData.content;
       updatedJot.textContent = calculatedTextContent;
-      newTextContent = calculatedTextContent;
-      needsIndexUpdate = true;
     }
   }
 
-  await db.transaction('rw', db.jots, async () => {
+  await db.transaction("rw", db.jots, async () => {
     await db.jots.update(id, updatedJot);
   });
 
@@ -80,22 +82,23 @@ export async function updateJot(id: string | null | undefined, updateData: { tit
  * @param id The ID of the Jot to delete.
  */
 export async function deleteJot(id: string): Promise<void> {
-  await db.transaction('rw', db.jots, async () => {
+  await db.transaction("rw", db.jots, async () => {
     await db.jots.delete(id);
   });
 }
-
 
 /**
  * Retrieves a single Jot by its ID.
  * @param id The ID of the Jot.
  * @returns The Jot object or undefined if not found or ID is invalid.
  */
-export async function getJotById(id: string | null | undefined): Promise<Jot | undefined> {
+export async function getJotById(
+  id: string | null | undefined,
+): Promise<Jot | undefined> {
   // Add check for valid ID before querying Dexie
-  if (typeof id !== 'string' || id === '') {
-      console.warn('getJotById called with invalid ID:', id);
-      return undefined;
+  if (typeof id !== "string" || id === "") {
+    console.warn("getJotById called with invalid ID:", id);
+    return undefined;
   }
   return db.jots.get(id);
 }
@@ -105,11 +108,9 @@ export async function getJotById(id: string | null | undefined): Promise<Jot | u
  * Uses Dexie's liveQuery and @vueuse/rxjs for Vue reactivity.
  */
 export function listJotsReactive() {
-    return useObservable(
-        from(
-            liveQuery(() => db.jots.orderBy('updatedAt').reverse().toArray())
-        )
-    );
+  return useObservable(
+    from(liveQuery(() => db.jots.orderBy("updatedAt").reverse().toArray())),
+  );
 }
 
 /**
@@ -117,5 +118,91 @@ export function listJotsReactive() {
  * @returns The latest Jot or undefined if the database is empty.
  */
 export async function getLatestJot(): Promise<Jot | undefined> {
-    return db.jots.orderBy('updatedAt').reverse().first();
+  return db.jots.orderBy("updatedAt").reverse().first();
+}
+
+// --- Dummy Data Utilities ---
+
+const DUMMY_JOT_PREFIX = "[TEST_DATA] ";
+
+// Assuming isLoading is managed globally or passed in if needed for UI feedback
+// For simplicity, let's assume console logs are sufficient for now
+// const isLoading = ref(false); // Example if managing locally
+
+/**
+ * Generates and adds a specified number of dummy Jots for testing.
+ * @param count The number of dummy jots to generate.
+ */
+export async function generateDummyJots(count: number): Promise<void> {
+  if (count <= 0) return;
+  console.log(`Generating ${count} dummy jots...`);
+  // isLoading.value = true; // Uncomment if isLoading state is managed here
+  const promises: Promise<Jot>[] = [];
+
+  try {
+    for (let i = 1; i <= count; i++) {
+      const id = uuidv4(); // Generate unique ID
+      const title = `${DUMMY_JOT_PREFIX}Dummy Jot ${i}`;
+      // const textContent = `This is the searchable text content for Dummy Jot number ${i}. It includes some repeated words for testing search. Test test test. Example phrase ${i}.`; // textContent is generated by addJot
+      const content: JSONContent = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: `This is the TipTap content for Dummy Jot ${i}. Some unique text: ${uuidv4().substring(0, 8)}`,
+              },
+            ],
+          },
+        ],
+      };
+      // Use the existing addJot function structure
+      const jotData = { title, content };
+      promises.push(addJot(jotData, id)); // Pass generated ID
+    }
+
+    await Promise.all(promises);
+    console.log(`Successfully added ${count} dummy jots.`);
+  } catch (error) {
+    console.error("Error generating dummy jots:", error);
+  } finally {
+    // isLoading.value = false; // Reset loading state
+  }
+}
+
+/**
+ * Clears all Jots whose titles start with the dummy data prefix.
+ */
+export async function clearDummyJots(): Promise<void> {
+  console.log("Clearing dummy jots...");
+  // isLoading.value = true; // Uncomment if isLoading state is managed here
+  try {
+    // Find IDs of jots with the prefix
+    const dummyJotIds = await db.jots
+      .where("title")
+      .startsWith(DUMMY_JOT_PREFIX)
+      .primaryKeys(); // Efficiently get only the primary keys (IDs)
+
+    if (dummyJotIds.length === 0) {
+      console.log("No dummy jots found to clear.");
+      return;
+    }
+
+    console.log(`Found ${dummyJotIds.length} dummy jots to delete.`);
+
+    // Use Dexie's bulkDelete for efficiency
+    await db.jots.bulkDelete(dummyJotIds);
+
+    console.log("Successfully cleared dummy jots.");
+
+    // Optional: You might need to trigger a UI update or navigation here
+    // e.g., if the current jot was deleted, select the latest one.
+    // Consider calling the relevant jotStore action if necessary.
+  } catch (error) {
+    console.error("Error clearing dummy jots:", error);
+  } finally {
+    // isLoading.value = false; // Reset loading state
+  }
 }

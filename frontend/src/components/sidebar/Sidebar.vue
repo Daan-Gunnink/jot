@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { storeToRefs } from 'pinia';
+import { storeToRefs } from "pinia";
 import { useJotStore } from "../../store/jotStore";
 import { useUIStore } from "../../store/uiStore";
 import { useRouter } from "vue-router";
@@ -9,13 +9,14 @@ import JotItem from "./JotItem.vue";
 import { Environment } from "../../../wailsjs/runtime";
 import { Bars3Icon, PlusIcon } from "@heroicons/vue/24/outline";
 import SearchInput from "./SearchInput.vue";
-import { useVirtualizer } from '@tanstack/vue-virtual';
+import { useVirtualizer } from "@tanstack/vue-virtual";
 
 const jotStore = useJotStore();
 const uiStore = useUIStore();
 const router = useRouter();
 
-const { reactiveJots, searchResults, currentSearchQuery, isLoading } = storeToRefs(jotStore);
+const { reactiveJots, searchResults, currentSearchQuery, isLoading } =
+  storeToRefs(jotStore);
 
 const system = ref<"darwin" | "windows" | null>(null);
 
@@ -35,11 +36,13 @@ const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 // --- Virtualization Setup ---
 const parentRef = ref<HTMLElement | null>(null);
 
-const rowVirtualizer = useVirtualizer(computed(() => ({
-  count: displayedJots.value.length,
-  getScrollElement: () => parentRef.value,
-  estimateSize: () => 64,
-})));
+const rowVirtualizer = useVirtualizer(
+  computed(() => ({
+    count: displayedJots.value.length,
+    getScrollElement: () => parentRef.value,
+    estimateSize: () => 64,
+  })),
+);
 
 const virtualItems = computed(() => rowVirtualizer.value.getVirtualItems());
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
@@ -123,7 +126,11 @@ onMounted(async () => {
       </div>
       <div
         v-else
-        :style="{ height: `${totalSize}px`, width: '100%', position: 'relative' }"
+        :style="{
+          height: `${totalSize}px`,
+          width: '100%',
+          position: 'relative',
+        }"
       >
         <div
           v-for="virtualRow in virtualItems"

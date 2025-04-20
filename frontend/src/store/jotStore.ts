@@ -1,10 +1,10 @@
 import type { JSONContent } from "@tiptap/vue-3";
-import { defineStore, storeToRefs } from "pinia";
+import { defineStore } from "pinia";
 import { ref, computed, type Ref } from "vue";
 import { v4 as uuidv4 } from "uuid";
 import type { Jot } from "../db";
 import * as jotService from "../services/jotService";
-import Fuse, { type IFuseOptions } from 'fuse.js'
+import Fuse, { type IFuseOptions } from "fuse.js";
 
 // Helper function to limit title length (keep if still used, maybe move to utils)
 // function limitTitleLength(title: string, maxLength = 50): string {
@@ -19,7 +19,7 @@ export const useJotStore = defineStore(
     // const jots = ref<Jot[]>([]);
     const currentJotId = ref<string | null>(null);
     const isLoading = ref<boolean>(true);
-    const currentSearchQuery = ref<string>('');
+    const currentSearchQuery = ref<string>("");
     const searchResults = ref<Jot[] | null>(null);
 
     // --- Initialization ---
@@ -31,9 +31,9 @@ export const useJotStore = defineStore(
         currentJotId.value = latestJot?.id ?? null;
         // If no jots exist, maybe create an initial one?
         if (!currentJotId.value) {
-           console.log("No initial jots found in Dexie.");
-           // Optionally create a default jot here if needed
-           // await createJot("My First Jot");
+          console.log("No initial jots found in Dexie.");
+          // Optionally create a default jot here if needed
+          // await createJot("My First Jot");
         }
       } catch (error) {
         console.error("Failed to initialize jot store:", error);
@@ -42,7 +42,6 @@ export const useJotStore = defineStore(
         isLoading.value = false;
       }
     };
-
 
     const reactiveJots = jotService.listJotsReactive();
 
@@ -57,27 +56,29 @@ export const useJotStore = defineStore(
         return;
       }
 
-      try{
+      try {
         const jotsData = JSON.parse(rawData) as {
           currentJotId: string;
           jots: {
             title: string;
-            content: string,
-            id: string
+            content: string;
+            id: string;
           }[];
         };
         for (const jot of jotsData.jots) {
           const parsedContent = JSON.parse(jot.content);
-          await jotService.addJot({
-            title: jot.title,
-            content: parsedContent,
-          }, jot.id);
+          await jotService.addJot(
+            {
+              title: jot.title,
+              content: parsedContent,
+            },
+            jot.id,
+          );
         }
       } catch (error) {
         console.error("Failed to migrate jots:", error);
-        return
+        return;
       }
-
 
       localStorage.setItem("dexieMigrationCompleted", "true");
     };
@@ -97,8 +98,8 @@ export const useJotStore = defineStore(
         currentJotId.value = newJot.id;
         return newJot.id;
       } catch (error) {
-         console.error("Failed to create jot:", error);
-         throw error; // Re-throw for component handling
+        console.error("Failed to create jot:", error);
+        throw error; // Re-throw for component handling
       } finally {
         isLoading.value = false;
       }
@@ -109,24 +110,24 @@ export const useJotStore = defineStore(
       title?: string,
       content?: JSONContent,
     ): Promise<void> => {
-        // Avoid unnecessary updates if title/content are undefined
-        if (title === undefined && content === undefined) {
-            return;
+      // Avoid unnecessary updates if title/content are undefined
+      if (title === undefined && content === undefined) {
+        return;
+      }
+      isLoading.value = true;
+      const updateData = { title, content };
+      try {
+        const updatedJot = await jotService.updateJot(id, updateData);
+        if (!updatedJot) {
+          console.warn(`Jot with id ${id} not found for update.`);
         }
-        isLoading.value = true;
-        const updateData = { title, content };
-        try {
-            const updatedJot = await jotService.updateJot(id, updateData);
-            if (!updatedJot) {
-                 console.warn(`Jot with id ${id} not found for update.`);
-            }
-            // No need to update local state, Dexie handles it
-        } catch (error) {
-             console.error("Failed to update jot:", error);
-             throw error;
-        } finally {
-            isLoading.value = false;
-        }
+        // No need to update local state, Dexie handles it
+      } catch (error) {
+        console.error("Failed to update jot:", error);
+        throw error;
+      } finally {
+        isLoading.value = false;
+      }
     };
 
     const deleteJot = async (id: string): Promise<string | null> => {
@@ -146,31 +147,32 @@ export const useJotStore = defineStore(
         console.error("Failed to delete jot:", error);
         throw error;
       } finally {
-         isLoading.value = false;
+        isLoading.value = false;
       }
     };
 
     // Getters now call the service
     const getJotById = async (id: string): Promise<Jot | undefined> => {
-        if (!id) return undefined;
-        // Consider adding caching here if called frequently
-        return await jotService.getJotById(id);
+      if (!id) return undefined;
+      // Consider adding caching here if called frequently
+      return await jotService.getJotById(id);
     };
 
     // Use computed property for current Jot object based on ID and reactive list
     const currentJot: Ref<Jot | undefined> = computed(() => {
-        if (!currentJotId.value || !reactiveJots.value) {
-            return undefined;
-        }
-        return reactiveJots.value.find(jot => jot.id === currentJotId.value);
+      if (!currentJotId.value || !reactiveJots.value) {
+        return undefined;
+      }
+      return reactiveJots.value.find((jot) => jot.id === currentJotId.value);
     });
-
 
     const setCurrentJotId = (id: string | null): void => {
       currentJotId.value = id;
     };
 
-    const isEmpty = computed(() => !reactiveJots.value || reactiveJots.value.length === 0);
+    const isEmpty = computed(
+      () => !reactiveJots.value || reactiveJots.value.length === 0,
+    );
 
     const getLatestJot = async (): Promise<Jot | undefined> => {
       return await jotService.getLatestJot();
@@ -178,59 +180,59 @@ export const useJotStore = defineStore(
 
     // --- Search Logic ---
     const performSearch = async (query: string) => {
-        currentSearchQuery.value = query.trim();
-        if (!currentSearchQuery.value) {
-            searchResults.value = null; // Clear results if query is empty
-            isLoading.value = false; // Ensure loading is false
-            return;
+      currentSearchQuery.value = query.trim();
+      if (!currentSearchQuery.value) {
+        searchResults.value = null; // Clear results if query is empty
+        isLoading.value = false; // Ensure loading is false
+        return;
+      }
+
+      isLoading.value = true;
+      console.log("Performing search:", currentSearchQuery.value);
+      try {
+        const allJots = reactiveJots.value;
+
+        if (!allJots || allJots.length === 0) {
+          searchResults.value = []; // No jots to search
+          isLoading.value = false;
+          return;
         }
 
-        isLoading.value = true;
-        console.log("Performing search:", currentSearchQuery.value);
-        try {
-            const allJots = reactiveJots.value;
+        // 2. Configure Fuse.js
+        const fuseOptions: IFuseOptions<Jot> = {
+          keys: [
+            { name: "title", weight: 0.7 },
+            { name: "textContent", weight: 0.6 },
+          ],
+          includeScore: false,
+          threshold: 0.4,
+        };
 
-            if (!allJots || allJots.length === 0) {
-                searchResults.value = []; // No jots to search
-                isLoading.value = false;
-                return;
-            }
+        const fuse = new Fuse(allJots, fuseOptions);
 
-            // 2. Configure Fuse.js
-            const fuseOptions: IFuseOptions<Jot> = {
-                keys: [
-                    { name: 'title', weight: 0.7 },
-                    { name: 'textContent', weight: 0.6 }
-                ],
-                includeScore: false, 
-                threshold: 0.4, 
-            };
+        // 4. Perform the search
+        const results = fuse.search(currentSearchQuery.value);
 
-            const fuse = new Fuse(allJots, fuseOptions);
-
-            // 4. Perform the search
-            const results = fuse.search(currentSearchQuery.value);
-            searchResults.value = results.map(result => result.item);
-
-        } catch (error) {
-            console.error("Failed to perform search:", error);
-            searchResults.value = []; // Indicate error or empty results
-        } finally {
-            isLoading.value = false;
-        }
+        console.log(results);
+        searchResults.value = results.map((result) => result.item);
+      } catch (error) {
+        console.error("Failed to perform search:", error);
+        searchResults.value = []; // Indicate error or empty results
+      } finally {
+        isLoading.value = false;
+      }
     };
 
     // Action to clear the search
     const clearSearch = () => {
-        currentSearchQuery.value = '';
-        searchResults.value = null;
-        isLoading.value = false; // Ensure loading is reset
+      currentSearchQuery.value = "";
+      searchResults.value = null;
+      isLoading.value = false; // Ensure loading is reset
     };
 
     // --- Initialization Call ---
     // Call initializeStore when the store is created
     initializeStore();
-
 
     return {
       // State
@@ -262,4 +264,3 @@ export const useJotStore = defineStore(
   //   persist: { ... }
   // }
 );
-

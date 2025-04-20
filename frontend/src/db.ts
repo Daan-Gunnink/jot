@@ -1,5 +1,5 @@
-import Dexie, { type Table } from 'dexie';
-import type { JSONContent } from '@tiptap/vue-3';
+import Dexie, { type Table } from "dexie";
+import type { JSONContent } from "@tiptap/vue-3";
 
 // Define the structure of a Jot item as stored in Dexie
 export interface Jot {
@@ -23,13 +23,13 @@ export class JotDatabase extends Dexie {
   jots!: Table<Jot, string>; // Primary key is string (the UUID)
 
   constructor() {
-    super('JotDatabase'); // Database name
+    super("JotDatabase"); // Database name
     this.version(1).stores({
       // Schema definition for version 1
-      jots: '&id, title, updatedAt, textContent', // &id = Primary key, unique. Index title, updatedAt. textContent is stored but not indexed here directly.
+      jots: "&id, title, updatedAt, textContent", // &id = Primary key, unique. Index title, updatedAt. textContent is stored but not indexed here directly.
     });
   }
 }
 
 // Create a singleton instance of the database
-export const db = new JotDatabase(); 
+export const db = new JotDatabase();

@@ -8,7 +8,6 @@ const jotStore = useJotStore();
 onMounted(async () => {
   await jotStore.migrateJots();
 });
-
 </script>
 
 <template>

@@ -71,11 +71,15 @@ const jotId = computed(() => {
   return route.params.id ? String(route.params.id) : jotStore.currentJotId;
 });
 
-const jot = ref<Jot | undefined>(undefined)
+const jot = ref<Jot | undefined>(undefined);
 
-watch(() => jotId.value, async () => {
-  jot.value = await jotStore.getJotById(jotId.value as string);
-}, {immediate: true});
+watch(
+  () => jotId.value,
+  async () => {
+    jot.value = await jotStore.getJotById(jotId.value as string);
+  },
+  { immediate: true },
+);
 
 function createFirstJot() {
   const id = jotStore.createJot();

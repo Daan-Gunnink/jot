@@ -1,14 +1,20 @@
 <template>
   <ContextMenuRoot class="w-full h-full">
     <ContextMenuTrigger as-child class="">
-
-      <RouterLink :key="props.jot.id" :to="`/jot/${props.jot.id}`" class="w-full h-full">
+      <RouterLink
+        :key="props.jot.id"
+        :to="`/jot/${props.jot.id}`"
+        class="w-full h-full"
+      >
         <div
           class="w-full h-full hover:bg-base-200 items-center rounded-l-xl px-4 py-2 flex flex-col justify-between"
           :class="{
-            'bg-base-100': jotId === props.jot.id
-          }">
-          <h2 class="text-base font-bold text-ellipsis overflow-hidden line-clamp-1 select-none self-start">
+            'bg-base-100': jotId === props.jot.id,
+          }"
+        >
+          <h2
+            class="text-base font-bold text-ellipsis overflow-hidden line-clamp-1 select-none self-start"
+          >
             {{ jot.title }}
           </h2>
           <p class="text-xs text-base-content/50 text-end select-none self-end">
@@ -21,18 +27,26 @@
     <ContextMenuPortal>
       <ContextMenuContent
         class="min-w-[220px] z-30 bg-base-200 border border-base-100 shadow-3xl hover:bg-neutral text-base-content hover:text-primary-content rounded-md p-[5px]"
-        :side-offset="5">
-        <ContextMenuItem value="Delete"
+        :side-offset="5"
+      >
+        <ContextMenuItem
+          value="Delete"
           class="group text-xs leading-none text-grass11 rounded-[3px] flex items-center h-4 px-1 relative pl-2 select-none outline-none"
-          @click="onDisplayDeleteConfirmation">
+          @click="onDisplayDeleteConfirmation"
+        >
           Delete
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenuPortal>
   </ContextMenuRoot>
-  <AlertModal :open="displayDeleteConfirmation" :title="`Delete ${props.jot.title}?`"
-    :description="`Are you sure you want to delete this Jot? This action cannot be undone.`" actionDescription="Delete"
-    @action="handleDelete" @cancel="displayDeleteConfirmation = false" />
+  <AlertModal
+    :open="displayDeleteConfirmation"
+    :title="`Delete ${props.jot.title}?`"
+    :description="`Are you sure you want to delete this Jot? This action cannot be undone.`"
+    actionDescription="Delete"
+    @action="handleDelete"
+    @cancel="displayDeleteConfirmation = false"
+  />
 </template>
 
 <script setup lang="ts">
