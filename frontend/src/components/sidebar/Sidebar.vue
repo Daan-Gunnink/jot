@@ -9,6 +9,7 @@ import JotItem from "./JotItem.vue";
 import { Environment } from "../../../wailsjs/runtime";
 import { Bars3Icon, PlusIcon } from "@heroicons/vue/24/outline";
 import SearchInput from "./SearchInput.vue";
+import { useVirtualizer } from '@tanstack/vue-virtual';
 
 const jotStore = useJotStore();
 const uiStore = useUIStore();
@@ -30,6 +31,19 @@ const noResultsFound = computed(() => {
 });
 
 const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
+
+// --- Virtualization Setup ---
+const parentRef = ref<HTMLElement | null>(null);
+
+const rowVirtualizer = useVirtualizer(computed(() => ({
+  count: displayedJots.value.length,
+  getScrollElement: () => parentRef.value,
+  estimateSize: () => 64,
+})));
+
+const virtualItems = computed(() => rowVirtualizer.value.getVirtualItems());
+const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
+// --- End Virtualization Setup ---
 
 function handleJotDelete(id: string) {
   const newJotId = jotStore.deleteJot(id);
@@ -94,20 +108,41 @@ onMounted(async () => {
     <div class="p-2">
       <SearchInput />
     </div>
-    <div class="flex flex-col flex-1 overflow-auto p-2">
-      <div v-if="isLoading && currentSearchQuery" class="text-center p-4 text-base-content/50">
+    <div ref="parentRef" class="flex-1 overflow-auto">
+      <div
+        v-if="isLoading && currentSearchQuery"
+        class="text-center p-4 text-base-content/50"
+      >
         Searching...
       </div>
-      <div v-else-if="noResultsFound" class="text-center p-4 text-base-content/50">
+      <div
+        v-else-if="noResultsFound"
+        class="text-center p-4 text-base-content/50"
+      >
         No results found for "{{ currentSearchQuery }}"
       </div>
-      <JotItem
+      <div
         v-else
-        v-for="jot in displayedJots"
-        :key="jot.id"
-        :jot="jot"
-        @onDelete="handleJotDelete(jot.id)"
-      />
+        :style="{ height: `${totalSize}px`, width: '100%', position: 'relative' }"
+      >
+        <div
+          v-for="virtualRow in virtualItems"
+          :key="String(virtualRow.key)"
+          :style="{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: `${virtualRow.size}px`,
+            transform: `translateY(${virtualRow.start}px)`,
+          }"
+        >
+          <JotItem
+            :jot="displayedJots[virtualRow.index]"
+            @onDelete="handleJotDelete(displayedJots[virtualRow.index].id)"
+          />
+        </div>
+      </div>
     </div>
     <div class="p-4 border-t-2 border-t-base-300">
       <button @click="createNewJot" class="btn btn-neutral w-full">
