@@ -58,8 +58,6 @@ const storeEditorContentWithDebounce = (
   title?: string,
   content?: JSONContent,
 ) => {
-  console.log(title, content);
-  console.log(props.jot);
   debounce(() => {
     jotStore.updateJot(props.jot.id, title, content);
   }, 1000);

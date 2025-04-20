@@ -10,7 +10,8 @@
     "type-check": "vue-tsc --noEmit",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint": "run-s lint:*",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "validate": "npm run lint && npm run type-check && npm run format"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",

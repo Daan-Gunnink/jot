@@ -36,13 +36,14 @@ const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 // --- Virtualization Setup ---
 const parentRef = ref<HTMLElement | null>(null);
 
-const rowVirtualizer = useVirtualizer(
-  computed(() => ({
-    count: displayedJots.value.length,
-    getScrollElement: () => parentRef.value,
-    estimateSize: () => 64,
-  })),
-);
+const virtualizerOptions = computed(() => ({
+  count: displayedJots.value.length,
+  getScrollElement: () => parentRef.value,
+  estimateSize: () => 64,
+  overscan: 10,
+}));
+
+const rowVirtualizer = useVirtualizer(virtualizerOptions);
 
 const virtualItems = computed(() => rowVirtualizer.value.getVirtualItems());
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());

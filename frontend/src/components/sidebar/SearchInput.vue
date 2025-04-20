@@ -19,7 +19,6 @@
 
 <script setup lang="ts">
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
-import { XMarkIcon } from "@heroicons/vue/20/solid";
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useJotStore } from "../../store/jotStore";
 
@@ -36,11 +35,6 @@ watch(searchQuery, (newValue) => {
   }, 300);
 });
 
-const clearSearchInput = () => {
-  searchQuery.value = "";
-  searchInput.value?.focus();
-};
-
 const handleKeyDown = (event: KeyboardEvent) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "k") {
     event.preventDefault();
@@ -54,5 +48,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("keydown", handleKeyDown);
+  clearTimeout(debounceTimer);
 });
 </script>
