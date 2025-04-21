@@ -30,7 +30,6 @@ let debounceTimer: number | undefined;
 watch(searchQuery, (newValue) => {
   clearTimeout(debounceTimer);
   debounceTimer = window.setTimeout(() => {
-    console.log("Performing search:", newValue);
     jotStore.performSearch(newValue);
   }, 300);
 });

@@ -68,13 +68,6 @@ const handleGlobalKeyDown = (event: KeyboardEvent) => {
     return;
   }
 
-  console.log(
-    "Global listener sees:",
-    event.key,
-    "Current Index:",
-    selectedIndex.value,
-  );
-
   if (event.key === "ArrowUp") {
     event.preventDefault();
     const newIndex =
