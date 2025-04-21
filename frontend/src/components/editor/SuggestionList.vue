@@ -5,7 +5,7 @@
         class="suggestion-list z-50 p-1 bg-base-200 text-base-content rounded-md shadow-lg border border-base-300 max-h-60 overflow-y-auto"
         :style="style">
         <div v-for="(item, index) in items" :key="item.id" :class="index === selectedIndex ? 'bg-primary text-primary-content' : 'hover:bg-base-300'"
-            class="suggestion-item p-2 rounded cursor-pointer" @click="() => selectItem(index)">
+            class="suggestion-item p-1 rounded cursor-pointer" @click="() => selectItem(index)">
             {{ item.title }}
         </div>
     </div>

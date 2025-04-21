@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="editorContainer"
     class="relative w-full bg-base-100 h-full rounded-tl-3xl pt-2 px-4 overflow-clip overflow-y-auto"
     :class="{ 'pl-20 pt-6': !isSidebarOpen }"
   >
@@ -47,6 +48,9 @@ const jotStore = useJotStore();
 const uiStore = useUIStore();
 const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
+// Add a ref for the editor container element
+const editorContainer = ref<HTMLDivElement | null>(null);
+
 // Get the shared suggestion state
 const suggestionState = useSharedSuggestionState();
 
@@ -57,15 +61,27 @@ let debounceTimeout: number | null = null;
 // Calculate positioning style for the suggestion list
 const suggestionStyle = computed((): CSSProperties => {
   const rect = suggestionState.value.clientRect;
-  if (!rect) {
+  const container = editorContainer.value;
+
+  // Ensure we have both the cursor rect and the container ref
+  if (!rect || !container) {
     return { position: 'absolute', visibility: 'hidden' };
   }
-  // Position below the cursor, considering scroll position
-  // You might need to adjust this based on your editor container's scrolling
+
+  const containerRect = container.getBoundingClientRect();
+  const scrollTop = container.scrollTop;
+  const scrollLeft = container.scrollLeft; // Get horizontal scroll
+
+  // Calculate position relative to the container
+  // Adjust left position for horizontal scroll
+  const left = rect.left - containerRect.left + scrollLeft;
+  // Position below the cursor, adjusted for container's scroll
+  const top = rect.bottom - containerRect.top + scrollTop;
+
   return {
     position: 'absolute',
-    left: `${rect.left}px`,
-    top: `${rect.bottom + window.scrollY}px`, // Adjust if editor scrolls independently
+    left: `${left}px`,
+    top: `${top}px`,
     zIndex: 50, // Ensure it's above editor content
   };
 });
