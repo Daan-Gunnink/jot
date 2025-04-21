@@ -229,7 +229,7 @@ export const useJotStore = defineStore(
       searchResults.value = null;
       isLoading.value = false; // Ensure loading is reset
     };
-    
+
     const jotsTitleMap = computed(() => {
       const map = new Map<string, string>();
       reactiveJots.value?.forEach((jot) => {

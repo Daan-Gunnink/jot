@@ -17,16 +17,16 @@
 </template>
 
 <script setup lang="ts">
-import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3';
-import { useRouter } from 'vue-router';
-import { useJotStore } from '../../store/jotStore';
-import { computed } from 'vue';
+import { nodeViewProps, NodeViewWrapper } from "@tiptap/vue-3";
+import { useRouter } from "vue-router";
+import { useJotStore } from "../../store/jotStore";
+import { computed } from "vue";
 const props = defineProps(nodeViewProps);
 const router = useRouter();
 const jotStore = useJotStore();
 
 const title = computed(() => {
-  return jotStore?.jotsTitleMap?.get(props.node.attrs.jotId) ?? '';
+  return jotStore?.jotsTitleMap?.get(props.node.attrs.jotId) ?? "";
 });
 
 const handleClick = () => {

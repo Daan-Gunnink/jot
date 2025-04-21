@@ -32,7 +32,14 @@ import ListItem from "@tiptap/extension-list-item";
 import OrderedList from "@tiptap/extension-ordered-list";
 import BulletList from "@tiptap/extension-bullet-list";
 import Placeholder from "@tiptap/extension-placeholder";
-import { ref, onMounted, onBeforeUnmount, watch, computed, type CSSProperties } from "vue";
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  computed,
+  type CSSProperties,
+} from "vue";
 import { useJotStore } from "../store/jotStore";
 import { useUIStore } from "../store/uiStore";
 import type { JSONContent } from "@tiptap/vue-3";
@@ -65,7 +72,7 @@ const suggestionStyle = computed((): CSSProperties => {
 
   // Ensure we have both the cursor rect and the container ref
   if (!rect || !container) {
-    return { position: 'absolute', visibility: 'hidden' };
+    return { position: "absolute", visibility: "hidden" };
   }
 
   const containerRect = container.getBoundingClientRect();
@@ -79,7 +86,7 @@ const suggestionStyle = computed((): CSSProperties => {
   const top = rect.bottom - containerRect.top + scrollTop;
 
   return {
-    position: 'absolute',
+    position: "absolute",
     left: `${left}px`,
     top: `${top}px`,
     zIndex: 50, // Ensure it's above editor content
@@ -156,14 +163,13 @@ onMounted(() => {
 
       // Safely find the first heading's text content
       const firstContentNode = jsonContent?.content?.[0];
-      if (firstContentNode?.type === 'heading') {
-        firstHeadingText = firstContentNode.content?.map(node => node.text || '').join('');
+      if (firstContentNode?.type === "heading") {
+        firstHeadingText = firstContentNode.content
+          ?.map((node) => node.text || "")
+          .join("");
       }
 
-      storeEditorContentWithDebounce(
-        firstHeadingText,
-        jsonContent
-      );
+      storeEditorContentWithDebounce(firstHeadingText, jsonContent);
     },
   });
 });
