@@ -158,16 +158,27 @@ onMounted(() => {
     onUpdate: () => {
       if (!editor.value) return;
       const jsonContent = editor.value.getJSON();
-      let firstHeadingText: string | undefined = undefined;
 
-      const firstContentNode = jsonContent?.content?.[0];
-      if (firstContentNode?.type === "heading") {
-        firstHeadingText = firstContentNode.content
-          ?.map((node) => node.text || "")
-          .join("");
+      let headingText: { level: number; text?: string } | undefined = {
+        level: 99,
+      };
+
+      for (const node of jsonContent.content ?? []) {
+        if (node.type === "heading") {
+          if (
+            headingText &&
+            node.attrs?.level &&
+            node.attrs.level < headingText?.level
+          ) {
+            headingText = {
+              level: node.attrs.level,
+              text: node.content?.map((node) => node.text || "").join(""),
+            };
+          }
+        }
       }
 
-      storeEditorContentWithDebounce(firstHeadingText, jsonContent);
+      storeEditorContentWithDebounce(headingText?.text, jsonContent);
     },
   });
 });

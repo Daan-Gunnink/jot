@@ -81,6 +81,8 @@ export const noteSuggestionOptions: Omit<SuggestionOptions, "editor"> = {
   render: () => {
     let component: VueRenderer | null = null;
 
+    let stopWatch: (() => void) | null = null;
+
     return {
       onStart: (props: SuggestionProps<Jot>) => {
         component = new VueRenderer(SuggestionList, {
@@ -100,7 +102,7 @@ export const noteSuggestionOptions: Omit<SuggestionOptions, "editor"> = {
           show: true,
         });
 
-        watch(
+        stopWatch = watch(
           suggestionState,
           (newState) => {
             const newRect = newState.clientRect;
@@ -147,6 +149,7 @@ export const noteSuggestionOptions: Omit<SuggestionOptions, "editor"> = {
       },
 
       onExit: () => {
+        stopWatch?.();
         component?.destroy();
         setSuggestionState({ items: [], command: null, show: false });
       },
