@@ -230,6 +230,17 @@ export const useJotStore = defineStore(
       isLoading.value = false; // Ensure loading is reset
     };
 
+    const jotsTitleMap = computed(() => {
+      const map = new Map<string, string>();
+      reactiveJots.value?.forEach((jot) => {
+        if (jot && jot.id && jot.title !== undefined && jot.title !== null) {
+          map.set(jot.id, jot.title);
+        }
+      });
+
+      return map;
+    });
+
     // --- Initialization Call ---
     // Call initializeStore when the store is created
     initializeStore();
@@ -246,6 +257,7 @@ export const useJotStore = defineStore(
       currentJot,
       isEmpty,
       getLatestJot, // Keep if needed elsewhere
+      jotsTitleMap,
 
       // Actions
       migrateJots,

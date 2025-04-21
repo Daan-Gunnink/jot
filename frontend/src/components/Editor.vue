@@ -1,9 +1,17 @@
 <template>
   <div
-    class="w-full bg-base-100 h-full rounded-tl-3xl pt-2 px-4 overflow-clip overflow-y-auto"
+    ref="editorContainer"
+    class="relative w-full bg-base-100 h-full rounded-tl-3xl pt-2 px-4 overflow-clip overflow-y-auto"
     :class="{ 'pl-20 pt-6': !isSidebarOpen }"
   >
     <editor-content :editor="editor" class="tiptap" />
+    <!-- Conditionally render the suggestion list -->
+    <SuggestionList
+      v-if="suggestionState.show && suggestionState.command"
+      :items="suggestionState.items"
+      :command="suggestionState.command"
+      :style="suggestionStyle"
+    />
   </div>
 </template>
 
@@ -24,22 +32,66 @@ import ListItem from "@tiptap/extension-list-item";
 import OrderedList from "@tiptap/extension-ordered-list";
 import BulletList from "@tiptap/extension-bullet-list";
 import Placeholder from "@tiptap/extension-placeholder";
-import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue";
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  computed,
+  type CSSProperties,
+} from "vue";
 import { useJotStore } from "../store/jotStore";
 import { useUIStore } from "../store/uiStore";
 import type { JSONContent } from "@tiptap/vue-3";
 import type { Jot } from "../db";
+
+// Import custom node and suggestion config
+import { NoteLinkNode } from "./editor/NoteLinkNode";
+import { useSharedSuggestionState } from "./editor/suggestionUtils";
+import SuggestionList from "./editor/SuggestionList.vue";
 
 const editor = ref<Editor>();
 const jotStore = useJotStore();
 const uiStore = useUIStore();
 const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
-const props = defineProps<{
-  jot: Jot;
-}>();
+// Add a ref for the editor container element
+const editorContainer = ref<HTMLDivElement | null>(null);
+
+// Get the shared suggestion state
+const suggestionState = useSharedSuggestionState();
+
+const props = defineProps<{ jot: Jot }>();
 
 let debounceTimeout: number | null = null;
+
+// Calculate positioning style for the suggestion list
+const suggestionStyle = computed((): CSSProperties => {
+  const rect = suggestionState.value.clientRect;
+  const container = editorContainer.value;
+
+  // Ensure we have both the cursor rect and the container ref
+  if (!rect || !container) {
+    return { position: "absolute", visibility: "hidden" };
+  }
+
+  const containerRect = container.getBoundingClientRect();
+  const scrollTop = container.scrollTop;
+  const scrollLeft = container.scrollLeft; // Get horizontal scroll
+
+  // Calculate position relative to the container
+  // Adjust left position for horizontal scroll
+  const left = rect.left - containerRect.left + scrollLeft;
+  // Position below the cursor, adjusted for container's scroll
+  const top = rect.bottom - containerRect.top + scrollTop;
+
+  return {
+    position: "absolute",
+    left: `${left}px`,
+    top: `${top}px`,
+    zIndex: 50, // Ensure it's above editor content
+  };
+});
 
 const debounce = (func: (...args: unknown[]) => void, delay: number) => {
   // Clear any existing timeout
@@ -66,8 +118,9 @@ const storeEditorContentWithDebounce = (
 watch(
   () => props.jot.id,
   (newJotId, oldJotId) => {
-    if (newJotId !== oldJotId) {
-      editor.value?.commands.setContent(props.jot.content);
+    if (newJotId !== oldJotId && editor.value) {
+      // Use `setContent` carefully, it resets history. Consider `setNodeContent` if possible.
+      editor.value.commands.setContent(props.jot.content, false);
     }
   },
 );
@@ -93,37 +146,60 @@ onMounted(() => {
       Italic,
       Blockquote,
       HorizontalRule,
-      TaskItem,
+      TaskItem.configure({
+        nested: true,
+      }),
       TaskList,
       Placeholder.configure({
         placeholder: "Start writing something...",
       }),
+      NoteLinkNode,
     ],
     onUpdate: () => {
-      const firstHeading =
-        editor.value
-          ?.getJSON()
-          ?.content?.find((node) => node.type === "heading") ?? undefined;
-      storeEditorContentWithDebounce(
-        firstHeading?.content?.map((node) => node.text).join(""),
-        editor.value?.getJSON(),
-      );
+      if (!editor.value) return;
+      const jsonContent = editor.value.getJSON();
+
+      let headingText: { level: number; text?: string } | undefined = {
+        level: 99,
+      };
+
+      for (const node of jsonContent.content ?? []) {
+        if (node.type === "heading") {
+          if (
+            headingText &&
+            node.attrs?.level &&
+            node.attrs.level < headingText?.level
+          ) {
+            headingText = {
+              level: node.attrs.level,
+              text: node.content?.map((node) => node.text || "").join(""),
+            };
+          }
+        }
+      }
+
+      storeEditorContentWithDebounce(headingText?.text, jsonContent);
     },
   });
 });
 
 onBeforeUnmount(() => {
   editor.value?.destroy();
+  if (debounceTimeout !== null) {
+    window.clearTimeout(debounceTimeout);
+  }
 });
 </script>
 
 <style scoped>
 .tiptap {
   height: 100%;
+  min-height: 200px; /* Ensure minimum height for editor */
 }
 
 .tiptap :deep(.ProseMirror) {
   height: 100%;
+  min-height: inherit; /* Inherit min-height */
 }
 
 .tiptap :deep(.ProseMirror-focused) {
