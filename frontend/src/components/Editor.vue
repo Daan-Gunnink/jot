@@ -120,7 +120,7 @@ watch(
   (newJotId, oldJotId) => {
     if (newJotId !== oldJotId && editor.value) {
       // Use `setContent` carefully, it resets history. Consider `setNodeContent` if possible.
-      editor.value.commands.setContent(props.jot.content, false); // false = don't emit update
+      editor.value.commands.setContent(props.jot.content, false);
     }
   },
 );
@@ -147,13 +147,12 @@ onMounted(() => {
       Blockquote,
       HorizontalRule,
       TaskItem.configure({
-        nested: true, // Allow nested task items if desired
+        nested: true,
       }),
       TaskList,
       Placeholder.configure({
         placeholder: "Start writing something...",
       }),
-      // Add our custom node (which now includes the suggestion plugin)
       NoteLinkNode,
     ],
     onUpdate: () => {
@@ -161,7 +160,6 @@ onMounted(() => {
       const jsonContent = editor.value.getJSON();
       let firstHeadingText: string | undefined = undefined;
 
-      // Safely find the first heading's text content
       const firstContentNode = jsonContent?.content?.[0];
       if (firstContentNode?.type === "heading") {
         firstHeadingText = firstContentNode.content
@@ -285,10 +283,5 @@ onBeforeUnmount(() => {
       flex: 1 1 auto;
     }
   }
-}
-
-/* Add specific styling for the note link component if needed */
-.tiptap :deep(.note-link-component) {
-  /* Handled by the component itself using Tailwind */
 }
 </style>
