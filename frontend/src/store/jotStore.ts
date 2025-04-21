@@ -15,29 +15,18 @@ import Fuse, { type IFuseOptions } from "fuse.js";
 export const useJotStore = defineStore(
   "jot",
   () => {
-    // Remove the local jots ref - data comes from Dexie service
-    // const jots = ref<Jot[]>([]);
     const currentJotId = ref<string | null>(null);
     const isLoading = ref<boolean>(true);
     const currentSearchQuery = ref<string>("");
     const searchResults = ref<Jot[] | null>(null);
 
-    // --- Initialization ---
-    // Action to load initial state from Dexie
     const initializeStore = async () => {
       isLoading.value = true;
       try {
         const latestJot = await jotService.getLatestJot();
         currentJotId.value = latestJot?.id ?? null;
-        // If no jots exist, maybe create an initial one?
-        if (!currentJotId.value) {
-          console.log("No initial jots found in Dexie.");
-          // Optionally create a default jot here if needed
-          // await createJot("My First Jot");
-        }
       } catch (error) {
         console.error("Failed to initialize jot store:", error);
-        // Handle initialization error (e.g., show message to user)
       } finally {
         isLoading.value = false;
       }
@@ -188,7 +177,6 @@ export const useJotStore = defineStore(
       }
 
       isLoading.value = true;
-      console.log("Performing search:", currentSearchQuery.value);
       try {
         const allJots = reactiveJots.value;
 
@@ -213,7 +201,6 @@ export const useJotStore = defineStore(
         // 4. Perform the search
         const results = fuse.search(currentSearchQuery.value);
 
-        console.log(results);
         searchResults.value = results.map((result) => result.item);
       } catch (error) {
         console.error("Failed to perform search:", error);

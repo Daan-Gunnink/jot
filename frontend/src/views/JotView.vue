@@ -68,7 +68,7 @@ const isSidebarOpen = computed(() => uiStore.isSidebarOpen);
 
 const route = useRoute();
 const jotId = computed(() => {
-  return route.params.id ? String(route.params.id) : jotStore.currentJotId;
+  return route.params.id ? String(route.params.id) : uiStore.lastSelectedJotId;
 });
 
 const jot = ref<Jot | undefined>(undefined);
@@ -77,6 +77,7 @@ watch(
   () => jotId.value,
   async () => {
     jot.value = await jotStore.getJotById(jotId.value as string);
+    uiStore.setLastSelectedJotId(jotId.value as string);
   },
   { immediate: true },
 );
@@ -91,13 +92,14 @@ async function loadJotState() {
     return;
   }
 
-  if (!jotId.value || !jot.value) {
-    // If there's no valid ID or the jot doesn't exist, navigate to the latest jot
+  if (!jotId.value) {
     const latestJot = await jotStore.getLatestJot();
     if (latestJot) {
       router.push(`/jot/${latestJot.id}`);
     }
     return;
+  } else {
+    router.push(`/jot/${jotId.value}`);
   }
 
   jotStore.setCurrentJotId(jotId.value as string);
@@ -107,12 +109,10 @@ onBeforeMount(async () => {
   await loadJotState();
 });
 
-// Watch for route changes to update the state
 watch(route, async () => {
   await loadJotState();
 });
 
-// Watch for changes in the store's jots array to handle deletion
 watch(
   () => jotStore.reactiveJots?.length,
   () => {
@@ -120,17 +120,6 @@ watch(
   },
 );
 
-// Watch for changes in the currentJotId to update the view
-watch(
-  () => jotStore.currentJotId,
-  (newId) => {
-    if (newId && newId !== jotId.value) {
-      router.push(`/jot/${newId}`);
-    }
-  },
-);
-
-// Toggle between dark and light mode
 function toggleDarkMode() {
   isDarkMode.value = !isDarkMode.value;
 
@@ -161,14 +150,12 @@ const handleKeyDown = (event: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  // Initialize theme
   if (isDarkMode.value) {
     document.documentElement.setAttribute("data-theme", "dark");
   } else {
     document.documentElement.setAttribute("data-theme", "light");
   }
 
-  // Add keyboard event listener
   document.addEventListener("keydown", handleKeyDown);
 });
 

@@ -32,7 +32,6 @@ const title = computed(() => {
 const handleClick = () => {
   const jotId = props.node.attrs.jotId;
   if (jotId) {
-    console.log(`Navigating to jot: /jot/${jotId}`);
     router.push(`/jot/${jotId}`);
   }
 };
