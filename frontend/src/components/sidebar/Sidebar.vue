@@ -7,10 +7,10 @@ import { useRouter } from "vue-router";
 import Logo from "../../assets/Logo.vue";
 import JotItem from "./JotItem.vue";
 import { Environment } from "../../../wailsjs/runtime";
-import { Bars3Icon, PlusIcon } from "@heroicons/vue/24/outline";
+import { Bars3Icon, PlusIcon, MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import SearchInput from "./SearchInput.vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
-
+import Tooltip from "../Tooltip.vue";
 const jotStore = useJotStore();
 const uiStore = useUIStore();
 const router = useRouter();
@@ -47,6 +47,7 @@ const rowVirtualizer = useVirtualizer(virtualizerOptions);
 
 const virtualItems = computed(() => rowVirtualizer.value.getVirtualItems());
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
+const actionKey = computed(() => system.value === "darwin" ? "⌘" : "Ctrl");
 // --- End Virtualization Setup ---
 
 function handleJotDelete(id: string) {
@@ -84,28 +85,42 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 absolute top-0 left-0 mt-2 ml-2 z-30">
-    <button
-      v-if="!isSidebarOpen"
-      class="btn btn-ghost btn-square"
-      @click="toggleSidebar"
-    >
-      <Bars3Icon class="w-6 h-6 fill-base-content" />
-    </button>
-    <button
-      v-if="!isSidebarOpen"
-      class="btn btn-ghost btn-square"
-      @click="createNewJot"
-    >
-      <PlusIcon class="w-6 h-6 fill-base-content" />
-    </button>
+  <div v-if="!isSidebarOpen" class="flex flex-col gap-2 absolute top-0 left-0 mt-2 ml-2 z-30">
+    <Tooltip label="Toggle Sidebar" placement="right">
+      <template #content>
+        <kbd class="kbd kbd-sm">{{ actionKey }}</kbd>
+        <div class="mx-1 text-xs">+</div>
+        <kbd class="kbd kbd-sm">/</kbd>
+      </template>
+      <button class="btn btn-ghost btn-square" @click="toggleSidebar">
+        <Bars3Icon class="w-6 h-6 fill-base-content" />
+      </button>
+    </Tooltip>
+
+    <Tooltip label="Create New Jot" placement="right">
+      <template #content>
+        <kbd class="kbd kbd-sm">{{ actionKey }}</kbd>
+        <div class="mx-1 text-xs">+</div>
+        <kbd class="kbd kbd-sm">N</kbd>
+      </template>
+      <button class="btn btn-ghost btn-square" @click="createNewJot">
+        <PlusIcon class="w-6 h-6 fill-base-content" />
+      </button>
+    </Tooltip>
   </div>
 
   <div v-if="isSidebarOpen" class="w-80 flex flex-col h-full bg-base-300">
     <div class="p-2 border-b-2 border-b-base-300 flex flex-row items-center">
-      <button class="btn btn-ghost btn-square" @click="toggleSidebar">
-        <Bars3Icon class="w-6 h-6 fill-base-content" />
-      </button>
+      <Tooltip label="Toggle Sidebar" placement="right">
+        <template #content>
+          <kbd class="kbd kbd-sm">{{ actionKey }}</kbd>
+          <div class="mx-1 text-xs">+</div>
+          <kbd class="kbd kbd-sm">/</kbd>
+        </template>
+        <button class="btn btn-ghost btn-square" @click="toggleSidebar">
+          <Bars3Icon class="w-6 h-6 fill-base-content" />
+        </button>
+      </Tooltip>
       <Logo class="w-10 h-10 fill-base-content" />
       <div class="text-2xl text-base-content font-extrabold">Jot</div>
     </div>
@@ -113,58 +128,35 @@ onMounted(async () => {
       <SearchInput />
     </div>
     <div ref="parentRef" class="flex-1 overflow-auto ml-2">
-      <div
-        v-if="isLoading && currentSearchQuery"
-        class="text-center p-4 text-base-content/50"
-      >
+      <div v-if="isLoading && currentSearchQuery" class="text-center p-4 text-base-content/50">
         Searching...
       </div>
-      <div
-        v-else-if="noResultsFound"
-        class="text-center p-4 text-base-content/50"
-      >
+      <div v-else-if="noResultsFound" class="text-center p-4 text-base-content/50">
         No results found for "{{ currentSearchQuery }}"
       </div>
-      <div
-        v-else
-        :style="{
-          height: `${totalSize}px`,
+      <div v-else :style="{
+        height: `${totalSize}px`,
+        width: '100%',
+        position: 'relative',
+      }">
+        <div v-for="virtualRow in virtualItems" :key="String(virtualRow.key)" :style="{
+          position: 'absolute',
+          top: 0,
+          left: 0,
           width: '100%',
-          position: 'relative',
-        }"
-      >
-        <div
-          v-for="virtualRow in virtualItems"
-          :key="String(virtualRow.key)"
-          :style="{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: `${virtualRow.size}px`,
-            transform: `translateY(${virtualRow.start}px)`,
-          }"
-        >
-          <JotItem
-            :jot="displayedJots[virtualRow.index]"
-            @onDelete="handleJotDelete(displayedJots[virtualRow.index].id)"
-          />
+          height: `${virtualRow.size}px`,
+          transform: `translateY(${virtualRow.start}px)`,
+        }">
+          <JotItem :jot="displayedJots[virtualRow.index]"
+            @onDelete="handleJotDelete(displayedJots[virtualRow.index].id)" />
         </div>
       </div>
     </div>
     <div class="p-4 border-t-2 border-t-base-300">
       <button @click="createNewJot" class="btn btn-neutral w-full">
         New Jot
-        <span
-          v-if="system === 'darwin'"
-          class="ml-1 text-xs font-bold text-neutral-content/60"
-          >⌘ + N</span
-        >
-        <span
-          v-if="system === 'windows'"
-          class="ml-1 text-xs font-bold text-neutral-content/60"
-          >Ctrl + N</span
-        >
+        <span v-if="system === 'darwin'" class="ml-1 text-xs font-bold text-neutral-content/60">{{ actionKey }} + N</span>
+        <span v-if="system === 'windows'" class="ml-1 text-xs font-bold text-neutral-content/60">{{ actionKey }} + N</span>
       </button>
     </div>
   </div>
