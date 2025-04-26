@@ -82,8 +82,8 @@ watch(
   { immediate: true },
 );
 
-function createFirstJot() {
-  const id = jotStore.createJot();
+async function createFirstJot() {
+  const id = await jotStore.createJot();
   router.push(`/jot/${id}`);
 }
 
@@ -132,14 +132,14 @@ function toggleDarkMode() {
   }
 }
 
-const handleKeyDown = (event: KeyboardEvent) => {
+const handleKeyDown = async (event: KeyboardEvent) => {
   if (
     (event.metaKey || event.ctrlKey) &&
     (event.altKey || event.ctrlKey || event.key === "n") &&
     event.key === "n"
   ) {
     event.preventDefault();
-    const id = jotStore.createJot();
+    const id = await jotStore.createJot();
     router.push(`/jot/${id}`);
   }
 
