@@ -9,13 +9,15 @@
       <div
         class="relative w-12 h-12 bg-base-300 rounded-2xl flex items-center justify-center"
       >
-        <button
-          class="btn btn-sm btn-ghost rounded-b-xl btn-square"
-          @click="toggleDarkMode"
+        <Tooltip label="Toggle Dark Mode" placement="left">
+          <button
+            class="btn btn-sm btn-ghost rounded-b-xl btn-square"
+            @click="toggleDarkMode"
         >
           <SunIcon class="size-4" v-if="isDarkMode" />
-          <MoonIcon class="size-4" v-else />
-        </button>
+            <MoonIcon class="size-4" v-else />
+          </button>
+        </Tooltip>
       </div>
     </div>
 
@@ -40,6 +42,7 @@
 <script setup lang="ts">
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import { useRouter, useRoute } from "vue-router";
+import Tooltip from "../components/Tooltip.vue";
 import {
   onMounted,
   onBeforeUnmount,
