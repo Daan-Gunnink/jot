@@ -18,7 +18,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  fmt.Sprintf("Jot - v%s", Version),
+		Title:  fmt.Sprintf("toJot - v%s", Version),
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

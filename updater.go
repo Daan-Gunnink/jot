@@ -199,7 +199,7 @@ func (u *UpdaterService) DownloadUpdate() (string, *UpdateInfo, error) {
 	}
 	
 	// Create temp directory for download
-	tempDir, err := os.MkdirTemp("", "jot-update")
+	tempDir, err := os.MkdirTemp("", "toJot-update")
 	if err != nil {
 		return "", nil, fmt.Errorf("error creating temp directory: %w", err)
 	}
@@ -605,7 +605,7 @@ if "%s" == "*.msi" (
 )
 
 echo Updating version in registry...
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Jot" /v "DisplayVersion" /t REG_SZ /d "%s" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\toJot" /v "DisplayVersion" /t REG_SZ /d "%s" /f
 
 echo Starting updated application...
 start "" "%s"
@@ -689,7 +689,7 @@ func getUpdateInfo() (*UpdateInfo, error) {
 	client := github.NewClient(nil)
 	
 	// Get the latest release
-	release, _, err := client.Repositories.GetLatestRelease(context.Background(), "daan-gunnink", "jot")
+	release, _, err := client.Repositories.GetLatestRelease(context.Background(), "daan-gunnink", "toJot")
 	if err != nil {
 		return nil, fmt.Errorf("error getting latest release: %w", err)
 	}
