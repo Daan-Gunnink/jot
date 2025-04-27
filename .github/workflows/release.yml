@@ -87,34 +87,34 @@ jobs:
         
       - name: Copy binary for auto-updates
         run: |
-          cp build/bin/Jot.app/Contents/MacOS/jot dist/jot-darwin-universal
+          cp build/bin/toJot.app/Contents/MacOS/toJot dist/toJot-darwin-universal
       
       - name: Create .dmg installer
         run: |
           brew install create-dmg
           create-dmg \
-            --volname "Jot Installer" \
+            --volname "toJot Installer" \
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
-            --icon "Jot.app" 200 190 \
-            --hide-extension "Jot.app" \
+            --icon "toJot.app" 200 190 \
+            --hide-extension "toJot.app" \
             --app-drop-link 600 185 \
             --no-internet-enable \
-            dist/Jot-macOS.dmg \
-            build/bin/Jot.app
+            dist/toJot-macOS.dmg \
+            build/bin/toJot.app
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
         with:
-          name: Jot-macOS
-          path: dist/Jot-macOS.dmg
+          name: toJot-macOS
+          path: dist/toJot-macOS.dmg
           
       - name: Upload macOS binary
         uses: actions/upload-artifact@v4
         with:
-          name: Jot-macOS-binary
-          path: dist/jot-darwin-universal
+          name: toJot-macOS-binary
+          path: dist/toJot-darwin-universal
 
   build-windows:
     needs: [extract-version, validate]
@@ -162,22 +162,22 @@ jobs:
         run: New-Item -ItemType Directory -Force -Path dist
 
       - name: Copy Windows binary for auto-updates
-        run: Copy-Item -Path build/bin/Jot.exe -Destination dist/jot-windows-amd64.exe
-        
+        run: Copy-Item -Path build/bin/toJot.exe -Destination dist/toJot-windows-amd64.exe
+
       - name: Copy Windows installer
-        run: Copy-Item -Path build/bin/jot-amd64-installer.exe -Destination dist/Jot-Windows-Installer.exe
+        run: Copy-Item -Path build/bin/toJot-amd64-installer.exe -Destination dist/toJot-Windows-Installer.exe
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: Jot-Windows-Installer
-          path: dist/Jot-Windows-Installer.exe
-          
+          name: toJot-Windows-Installer
+          path: dist/toJot-Windows-Installer.exe
+
       - name: Upload Windows binary
         uses: actions/upload-artifact@v4
         with:
-          name: Jot-Windows-binary
-          path: dist/jot-windows-amd64.exe
+          name: toJot-Windows-binary
+          path: dist/toJot-windows-amd64.exe
 
   release:
     needs: [extract-version, build-macos, build-windows]
@@ -191,25 +191,25 @@ jobs:
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
-          name: Jot-macOS
+          name: toJot-macOS
           path: ./release-assets
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: Jot-Windows-Installer
+          name: toJot-Windows-Installer
           path: ./release-assets
           
       - name: Download macOS binary
         uses: actions/download-artifact@v4
         with:
-          name: Jot-macOS-binary
+          name: toJot-macOS-binary
           path: ./release-assets
           
       - name: Download Windows binary
         uses: actions/download-artifact@v4
         with:
-          name: Jot-Windows-binary
+          name: toJot-Windows-binary
           path: ./release-assets
 
       - name: Create GitHub Release
