@@ -122,7 +122,7 @@ onMounted(async () => {
         </button>
       </Tooltip>
       <Logo class="w-10 h-10 fill-base-content" />
-      <div class="text-2xl text-base-content font-extrabold">Jot</div>
+      <div class="text-2xl text-base-content font-extrabold">toJot</div>
     </div>
     <div class="p-2">
       <SearchInput />
