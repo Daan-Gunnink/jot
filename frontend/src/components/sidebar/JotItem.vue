@@ -4,10 +4,10 @@
       <RouterLink
         :key="props.jot.id"
         :to="`/jot/${props.jot.id}`"
-        class="w-full h-full"
+        class="w-full h-full focus-visible:outline-none group"
       >
         <div
-          class="w-full h-full hover:bg-base-200 items-center rounded-l-xl px-4 py-2 flex flex-col justify-between"
+          class="w-full h-full hover:bg-base-200 focus:bg-base-200 focus-within:bg-base-200 group-focus-visible:bg-base-200 group-focus-visible:border-black/70 group-focus-visible:border border-r-0 items-center rounded-l-xl px-4 py-2 flex flex-col justify-between"
           :class="{
             'bg-base-100': jotId === props.jot.id,
           }"
