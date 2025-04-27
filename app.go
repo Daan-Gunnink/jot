@@ -14,7 +14,7 @@ type App struct {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	updater := NewUpdaterService("daan-gunnink", "jot")
+	updater := NewUpdaterService("daan-gunnink", "toJot")
 	return &App{
 		updater: updater,
 	}
